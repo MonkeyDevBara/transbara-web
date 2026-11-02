@@ -8,7 +8,7 @@ const ADDON_NAMES: Record<string, string> = { yayasan: 'Yayasan', hrd: 'HRD', bk
 const addons = Object.keys(ADDON_NAMES).map((k) => ({ name: `Aplikasi ${ADDON_NAMES[k]}`, image: `/v2/img/addons/${k}.webp` }));
 
 export const HOME_DEFAULTS = {
-  home_header: { wordmark: 'Transbara', cta_label: 'Undang Saya as Speaker' },
+  home_header: { wordmark: 'Transbara', cta_label: 'Contact as Speaker' },
 
   home_hero: {
     eyebrow1: 'Founder & CEO SIDIGS',
@@ -141,7 +141,7 @@ export const HOME_DEFAULTS = {
     label: '04 / Kontak',
     title: "Let's work\ntogether",
     text: 'Punya sekolah yang ingin bertransformasi, acara yang butuh pembicara, atau ide kolaborasi? Mari ngobrol.',
-    button_label: 'Mulai percakapan',
+    button_label: 'Hubungi Saya',
     card_title: 'SIDIGS',
     card_subtitle: 'Sekolah jadi mudah',
     card_button: 'Kunjungi sidigs.com',
