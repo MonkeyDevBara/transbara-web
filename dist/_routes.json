@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/_astro/*",
+    "/favicon.svg",
+    "/robots.txt",
+    "/images/inline-placeholder.svg",
+    "/images/transbara-wahyu.jpg",
+    "/admin"
+  ]
+}

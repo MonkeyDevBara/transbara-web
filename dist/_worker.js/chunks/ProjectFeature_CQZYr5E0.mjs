@@ -1,0 +1,13 @@
+globalThis.process ??= {}; globalThis.process.env ??= {};
+import { e as createAstro, f as createComponent, m as maybeRenderHead, h as addAttribute, r as renderTemplate, k as renderComponent, p as Fragment } from './astro/server_YdRI9-rv.mjs';
+import { b as $$Icon } from './Base_BhL5kVFL.mjs';
+
+const $$Astro = createAstro("https://transbara-wahyu.pages.dev");
+const $$ProjectFeature = createComponent(($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$ProjectFeature;
+  const { project, detailed = false } = Astro2.props;
+  return renderTemplate`${maybeRenderHead()}<article class="project-feature"> <div> <div class="logo-tile"> ${project.logo_url ? renderTemplate`<img${addAttribute(project.logo_url, "src")}${addAttribute(`Logo ${project.name}`, "alt")}>` : renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result2) => renderTemplate`<span class="mono">${project.name}</span><span class="hint">Logo menyusul</span>` })}`} </div> </div> <div> <div class="d-flex flex-wrap align-items-center mb-3" style="gap:.5rem"> <span class="eyebrow mb-0">Proyek utama</span> ${project.role && renderTemplate`<span class="role-chip">Peran: ${project.role}</span>`} </div> <h3 class="h2 mb-3">${project.name}</h3> ${project.summary && renderTemplate`<p class="lead-serif" style="font-size:1.375rem">${project.summary}</p>`} ${project.description && renderTemplate`<p style="color:#3A4452; max-width: 44rem;">${project.description}</p>`} ${detailed && project.contributions.length > 0 && renderTemplate`<div class="mt-4 mb-4" style="max-width: 44rem;"> <h4 class="h6 text-uppercase mb-2" style="letter-spacing:.08em; font-size:.75rem;">Peran dan kontribusi</h4> <ul class="contrib-list">${project.contributions.map((c) => renderTemplate`<li>${c}</li>`)}</ul> </div>`} <div class="d-flex flex-wrap mt-3" style="gap:1.25rem"> ${project.url ? renderTemplate`<a${addAttribute(project.url, "href")} class="text-link" target="_blank" rel="noopener">Kunjungi ${project.name} ${renderComponent($$result, "Icon", $$Icon, { "name": "external", "size": 16 })}</a>` : renderTemplate`<span class="text-muted-tw" style="font-size:.875rem">Tautan situs ${project.name} belum diatur.</span>`} ${!detailed && renderTemplate`<a href="/proyek" class="text-link">Lihat semua proyek ${renderComponent($$result, "Icon", $$Icon, { "name": "arrow", "size": 16 })}</a>`} </div> </div> </article>`;
+}, "C:/Users/Agustina Putri/OneDrive/Documents/Transbara Wahyu/src/components/ProjectFeature.astro", void 0);
+
+export { $$ProjectFeature as $ };
