@@ -1,0 +1,126 @@
+---
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import SampleLabel from '../../components/SampleLabel.astro';
+import StateBox from '../../components/StateBox.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import Icon from '../../components/Icon.astro';
+import { getArticles, getCategories, safe } from '../../lib/data';
+
+const [articles, categories] = await Promise.all([safe(getArticles, []), safe(getCategories, [])]);
+const featured = articles.data.find((a) => a.is_featured) ?? articles.data[0];
+// Artikel pilihan ikut di grid, tapi hanya tampil saat filter/pencarian aktif.
+const rest = [...articles.data.filter((a) => a !== featured), ...(featured ? [featured] : [])];
+// Komposisi bervariasi: pola kartu berulang setiap 5 artikel.
+const pattern = ['compact', 'compact', 'row', 'text', 'text'] as const;
+const PAGE_SIZE = 5;
+---
+<Base title="Catatan & Pemikiran" description="Ruang untuk berbagi gagasan, pelajaran, dan refleksi tentang pendidikan, bisnis, teknologi, dan perjalanan bertumbuh.">
+  <section class="page-head">
+    <div class="container">
+      <span class="gold-rule"></span>
+      <h1>Catatan &amp; Pemikiran</h1>
+      <p class="section-intro mb-3">Ruang untuk berbagi gagasan, pelajaran, dan refleksi tentang pendidikan, bisnis, teknologi, dan perjalanan bertumbuh.</p>
+      {articles.data.some((a) => a.is_sample) && <SampleLabel text="Contoh konten: artikel di halaman ini masih contoh" />}
+    </div>
+  </section>
+
+  {articles.error ? (
+    <section class="section"><div class="container"><StateBox type="error" /></div></section>
+  ) : (
+    <>
+      {featured && (
+        <section class="section-sm">
+          <div class="container">
+            <span class="eyebrow">Artikel pilihan</span>
+            <ArticleCard article={featured} variant="feature" headingLevel="h2" />
+          </div>
+        </section>
+      )}
+
+      <section class="section-sm bg-offwhite" style="padding-bottom: 1.5rem;">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-8 mb-3 mb-lg-0">
+              <div class="filter-bar" role="group" aria-label="Filter kategori">
+                <button type="button" class="chip" data-cat="" aria-pressed="true">Semua</button>
+                {categories.data.map((c) => <button type="button" class="chip" data-cat={c.slug} aria-pressed="false">{c.name}</button>)}
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <label for="cari" class="sr-only">Cari artikel</label>
+              <div class="search-input">
+                <Icon name="search" />
+                <input id="cari" type="search" class="form-control" placeholder="Cari judul atau topik…" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-sm bg-offwhite" style="padding-top: 2rem;">
+        <div class="container">
+          <p class="text-muted-tw mb-4" id="result-count" role="status" aria-live="polite" style="font-size:.875rem"></p>
+          <div class="row" id="article-grid">
+            {rest.map((a, i) => {
+              const v = pattern[i % pattern.length];
+              const col = v === 'compact' ? 'col-md-6' : 'col-12';
+              const haystack = [a.title, a.excerpt, a.category?.name, ...a.tags.map((t) => t.name)].join(' ').toLowerCase();
+              return (
+                <div class:list={[col, 'mb-5', 'article-item']} data-featured={a === featured ? '1' : undefined} data-cat={a.category?.slug ?? ''} data-search={haystack}>
+                  <ArticleCard article={a} variant={v} headingLevel="h2" />
+                </div>
+              );
+            })}
+          </div>
+          <div id="empty-state" hidden>
+            <StateBox type="empty" title="Tidak ada artikel yang cocok" text="Coba kata kunci lain atau pilih kategori Semua." />
+          </div>
+          <div class="text-center mt-2">
+            <button type="button" class="btn btn-secondary" id="load-more" hidden>Muat lebih banyak</button>
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+
+  <section class="section-sm">
+    <div class="container">
+      <Newsletter />
+    </div>
+  </section>
+</Base>
+
+<script define:vars={{ PAGE_SIZE }}>
+  const items = [...document.querySelectorAll('.article-item')];
+  const chips = [...document.querySelectorAll('.chip')];
+  const search = document.getElementById('cari');
+  const loadMore = document.getElementById('load-more');
+  const empty = document.getElementById('empty-state');
+  const count = document.getElementById('result-count');
+  const params = new URLSearchParams(location.search);
+  let cat = params.get('kategori') ?? '';
+  let q = params.get('q') ?? '';
+  let limit = PAGE_SIZE;
+  if (search) search.value = q;
+
+  function render() {
+    const term = q.trim().toLowerCase();
+    const filtering = Boolean(cat || term);
+    const matches = items.filter((el) => (filtering || !el.dataset.featured) && (!cat || el.dataset.cat === cat) && (!term || el.dataset.search.includes(term)));
+    items.forEach((el) => (el.hidden = true));
+    matches.slice(0, limit).forEach((el) => (el.hidden = false));
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.cat === cat)));
+    if (empty) empty.hidden = matches.length > 0;
+    if (loadMore) loadMore.hidden = matches.length <= limit;
+    if (count) count.textContent = cat || term ? `${matches.length} artikel ditemukan` : '';
+    const url = new URL(location.href);
+    cat ? url.searchParams.set('kategori', cat) : url.searchParams.delete('kategori');
+    term ? url.searchParams.set('q', q) : url.searchParams.delete('q');
+    history.replaceState(null, '', url);
+  }
+  chips.forEach((c) => c.addEventListener('click', () => { cat = c.dataset.cat; limit = PAGE_SIZE; render(); }));
+  search?.addEventListener('input', () => { q = search.value; limit = PAGE_SIZE; render(); });
+  loadMore?.addEventListener('click', () => { limit += PAGE_SIZE; render(); });
+  render();
+</script>

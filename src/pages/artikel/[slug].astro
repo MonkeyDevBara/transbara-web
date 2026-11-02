@@ -1,0 +1,156 @@
+---
+import Base from '../../layouts/Base.astro';
+import Cover from '../../components/Cover.astro';
+import AuthorBlock from '../../components/AuthorBlock.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import SampleLabel from '../../components/SampleLabel.astro';
+import Icon from '../../components/Icon.astro';
+import { getArticles, getRelatedIds, formatDate } from '../../lib/data';
+import { renderArticle } from '../../lib/markdown';
+
+const { slug } = Astro.params;
+const all = await getArticles();
+const index = all.findIndex((a) => a.slug === slug);
+const article = all[index];
+if (!article) return Astro.rewrite('/404');
+
+const { html, toc } = renderArticle(article.content);
+const newer = index > 0 ? all[index - 1] : null;
+const older = index < all.length - 1 ? all[index + 1] : null;
+
+// Artikel terkait: pilihan manual dari CMS, lalu dilengkapi artikel sekategori.
+const manual = await getRelatedIds(article.id);
+const related = [
+  ...manual.map((id) => all.find((a) => a.id === id)).filter(Boolean),
+  ...all.filter((a) => a.id !== article.id && !manual.includes(a.id) && a.category?.id === article.category?.id),
+  ...all.filter((a) => a.id !== article.id && !manual.includes(a.id) && a.category?.id !== article.category?.id),
+].slice(0, 3) as typeof all;
+
+const pageUrl = new URL(`/artikel/${article.slug}`, Astro.site ?? Astro.url.origin).toString();
+const enc = encodeURIComponent;
+const updated = article.updated_at && formatDate(article.updated_at) !== formatDate(article.published_at);
+---
+<Base
+  title={article.seo_title ?? article.title}
+  description={article.seo_description ?? article.excerpt ?? undefined}
+  canonical={article.canonical_url ?? pageUrl}
+  ogImage={article.og_image_url ?? article.cover_url}
+  noindex={article.noindex}
+>
+  <article>
+    <header class="article-header">
+      <div class="container">
+        <nav aria-label="Breadcrumb">
+          <ol class="tw-breadcrumb">
+            <li><a href="/">Beranda</a></li>
+            <li><a href="/artikel">Artikel</a></li>
+            {article.category && <li><a href={`/artikel?kategori=${article.category.slug}`}>{article.category.name}</a></li>}
+            <li aria-current="page" class="d-none d-md-inline">{article.title}</li>
+          </ol>
+        </nav>
+        <div class="d-flex flex-wrap align-items-center" style="gap:.5rem">
+          {article.category && <a class="badge-cat" href={`/artikel?kategori=${article.category.slug}`}>{article.category.name}</a>}
+          {article.is_sample && <SampleLabel />}
+        </div>
+        <h1>{article.title}</h1>
+        {article.subtitle && <p class="subtitle">{article.subtitle}</p>}
+        <div class="article-byline">
+          <AuthorBlock />
+          <div class="article-meta">
+            <span>Terbit <time datetime={article.published_at}>{formatDate(article.published_at)}</time></span>
+            {updated && <span>Diperbarui <time datetime={article.updated_at}>{formatDate(article.updated_at)}</time></span>}
+            {article.reading_minutes && <span>{article.reading_minutes} menit baca</span>}
+          </div>
+        </div>
+        <figure class="article-cover">
+          <Cover article={article} shape="wide" eager />
+          <figcaption>{article.cover_credit ?? 'Sampul tipografis. Ganti dengan foto atau ilustrasi asli melalui CMS.'}</figcaption>
+        </figure>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="article-layout">
+        {toc.length > 0 && (
+          <nav class="toc" aria-label="Daftar isi">
+            <span class="toc-title">Daftar isi</span>
+            <ol>{toc.map((t) => <li class={`d${t.depth}`}><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
+          </nav>
+        )}
+        <div>
+          {toc.length > 0 && (
+            <details class="toc-mobile">
+              <summary>Daftar isi</summary>
+              <ol>{toc.map((t) => <li class={`d${t.depth}`}><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
+            </details>
+          )}
+          <div class="prose" set:html={html} />
+
+          {article.tags.length > 0 && (
+            <div class="d-flex flex-wrap mt-5" style="gap:.5rem">
+              {article.tags.map((t) => <span class="role-chip">#{t.name}</span>)}
+            </div>
+          )}
+
+          <div class="d-flex flex-wrap justify-content-between align-items-center my-5" style="gap:1rem">
+            <a href="/artikel" class="text-link"><Icon name="arrow-left" size={16} /> Kembali ke semua artikel</a>
+            <div class="share-bar">
+              <span class="label">Bagikan</span>
+              <a href={`https://wa.me/?text=${enc(article.title + ' ' + pageUrl)}`} target="_blank" rel="noopener" aria-label="Bagikan ke WhatsApp"><Icon name="whatsapp" /></a>
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`} target="_blank" rel="noopener" aria-label="Bagikan ke LinkedIn"><Icon name="linkedin" /></a>
+              <a href={`https://x.com/intent/post?url=${enc(pageUrl)}&text=${enc(article.title)}`} target="_blank" rel="noopener" aria-label="Bagikan ke X"><Icon name="x" /></a>
+              <button type="button" class="copy-link" data-url={pageUrl} aria-label="Salin tautan"><Icon name="link" /></button>
+            </div>
+          </div>
+          <p class="form-status ok copy-status" role="status" aria-live="polite"></p>
+
+          <AuthorBlock variant="card" />
+
+          {(newer || older) && (
+            <nav class="post-nav mt-5" aria-label="Artikel sebelumnya dan berikutnya">
+              {older && <a href={`/artikel/${older.slug}`} class="prev"><small>← Sebelumnya</small><span>{older.title}</span></a>}
+              {newer && <a href={`/artikel/${newer.slug}`} class="next"><small>Berikutnya →</small><span>{newer.title}</span></a>}
+            </nav>
+          )}
+        </div>
+      </div>
+    </div>
+  </article>
+
+  {related.length > 0 && (
+    <section class="section bg-offwhite">
+      <div class="container">
+        <span class="gold-rule"></span>
+        <h2 class="section-title mb-5">Artikel Terkait</h2>
+        <div class="row">
+          {related.map((a) => <div class="col-md-4 mb-5 mb-md-0"><ArticleCard article={a} variant="compact" /></div>)}
+        </div>
+      </div>
+    </section>
+  )}
+</Base>
+
+<script>
+  // Sorot item daftar isi sesuai posisi baca.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  const heads = links.map((l) => document.getElementById(decodeURIComponent(l.hash.slice(1)))).filter(Boolean) as HTMLElement[];
+  if (heads.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((l) => l.classList.toggle('active', l.hash === `#${e.target.id}`));
+      });
+    }, { rootMargin: '-90px 0px -70% 0px' });
+    heads.forEach((h) => io.observe(h));
+  }
+  const copyBtn = document.querySelector<HTMLButtonElement>('.copy-link');
+  const copyStatus = document.querySelector<HTMLElement>('.copy-status');
+  copyBtn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(copyBtn.dataset.url!);
+      if (copyStatus) copyStatus.textContent = 'Tautan artikel sudah disalin.';
+    } catch {
+      if (copyStatus) copyStatus.textContent = 'Tautan tidak dapat disalin otomatis.';
+    }
+  });
+</script>

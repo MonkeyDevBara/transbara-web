@@ -1,0 +1,111 @@
+---
+import Base from '../layouts/Base.astro';
+import Portrait from '../components/Portrait.astro';
+import ProjectFeature from '../components/ProjectFeature.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { getProjects, safe } from '../lib/data';
+
+const projects = await safe(getProjects, []);
+const mainProject = projects.data.find((p) => p.is_featured);
+const values = [
+  { title: 'Manusia lebih dulu', text: 'Teknologi dan bisnis hanya berarti jika melayani orang-orang di dalamnya.' },
+  { title: 'Bertumbuh dengan sadar', text: 'Kecepatan penting, tetapi ritme dan arah jauh lebih penting.' },
+  { title: 'Jujur dalam keputusan', text: 'Keputusan yang baik diambil dengan jujur, adil, dan siap dipertanggungjawabkan.' },
+  { title: 'Mencari keberkahan', text: 'Pertumbuhan yang bermakna adalah pertumbuhan yang membawa kebaikan.' },
+];
+---
+<Base title="Tentang" description="Cerita Transbara Wahyu: mantan kepala sekolah, founder SIDIGS, dan Muslimpreneur yang menulis tentang pendidikan, bisnis, dan bertumbuh.">
+  <!-- 1. Perkenalan personal -->
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-7 pr-lg-5">
+          <nav aria-label="Breadcrumb"><ol class="tw-breadcrumb"><li><a href="/">Beranda</a></li><li aria-current="page">Tentang</li></ol></nav>
+          <span class="gold-rule"></span>
+          <h1 class="hero-title" style="font-size: clamp(2.5rem, 5.5vw, 4rem);">Saya Transbara Wahyu.</h1>
+          <p class="lead-serif mb-4">Seorang entrepreneur yang tertarik pada persimpangan antara teknologi, pendidikan, dan nilai-nilai Islam.</p>
+          <p class="hero-sub">Saya pernah menjadi kepala sekolah, lalu membangun SIDIGS untuk membantu sekolah bekerja lebih tertata. Di sini saya menulis tentang perjalanan itu: membangun bisnis, mentransformasi pendidikan, dan bertumbuh sebagai Muslimpreneur.</p>
+        </div>
+        <div class="col-lg-5"><Portrait eager /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Filosofi dan nilai -->
+  <section class="section bg-offwhite">
+    <div class="container">
+      <div class="row mb-5">
+        <div class="col-lg-7">
+          <span class="gold-rule"></span>
+          <h2 class="section-title">Filosofi dan Nilai</h2>
+          <p class="section-intro mb-3">Slow living bagi saya bukan berarti bekerja lebih sedikit, melainkan bekerja dengan lebih sadar.</p>
+          <span class="sample-label">Contoh konten: sesuaikan dengan nilai yang Anda pegang</span>
+        </div>
+      </div>
+      <ol class="focus-list">
+        {values.map((v, i) => (
+          <li class="focus-item">
+            <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{v.title}</h3>
+            <p>{v.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3–5. Narasi -->
+  <section class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3 d-none d-lg-block">
+          <nav class="toc" aria-label="Bagian cerita">
+            <span class="toc-title">Cerita</span>
+            <ol>
+              <li><a href="#kewirausahaan">Perjalanan kewirausahaan</a></li>
+              <li><a href="#edutech">Dari sekolah ke edutech</a></li>
+              <li><a href="#nilai">Nilai Islam dan bisnis</a></li>
+              <li><a href="#eksplorasi">Yang sedang dieksplorasi</a></li>
+            </ol>
+          </nav>
+        </div>
+        <div class="col-lg-8 offset-lg-1 prose">
+          <h2 id="kewirausahaan">Perjalanan Kewirausahaan</h2>
+          <p>Membangun bisnis mengajarkan saya untuk mendengar lebih banyak, memutuskan dengan lebih jujur, dan bersabar dengan proses.</p>
+          <div class="placeholder-box mb-4"><strong>Isi cerita asli</strong>[Ceritakan awal mula Anda memulai bisnis: momen, keputusan, atau tantangan nyata yang membentuk cara Anda membangun usaha.]</div>
+
+          <h2 id="edutech">Dari Ruang Kepala Sekolah ke Edutech</h2>
+          <p>Latar sebagai mantan kepala sekolah adalah poros cerita saya. Dari ruang itulah saya melihat langsung bagaimana sekolah bekerja: tantangannya, orang-orangnya, dan pekerjaan yang sering tidak terlihat. Pengalaman itu menjadi alasan SIDIGS lahir.</p>
+          <div class="placeholder-box mb-4"><strong>Isi cerita asli</strong>[Ceritakan masa Anda menjadi kepala sekolah: di mana, berapa lama, dan masalah konkret apa yang membuat Anda memutuskan membangun SIDIGS.]</div>
+          <blockquote class="pull-quote"><p>Perubahan di dunia pendidikan selalu dimulai dari manusia, bukan dari teknologi.</p></blockquote>
+
+          <h2 id="nilai">Nilai Islam dan Bisnis yang Bermakna</h2>
+          <p>Saya percaya bisnis dapat menjadi jalan kebaikan: bertumbuh dengan sehat, berlaku adil kepada mitra dan tim, serta mencari keberkahan dalam setiap langkah, tanpa harus kehilangan ambisi.</p>
+          <div class="placeholder-box mb-4"><strong>Isi cerita asli</strong>[Ceritakan bagaimana nilai Islam memengaruhi keputusan bisnis Anda, misalnya satu keputusan sulit yang Anda ambil karena memegang nilai tertentu.]</div>
+
+          <h2 id="eksplorasi">Yang Sedang Saya Eksplorasi</h2>
+          <p>Saat ini saya sedang banyak belajar tentang adopsi AI di dunia pendidikan, cara membangun produk digital yang benar-benar dipakai, strategi bisnis yang berkelanjutan, dan bagaimana menjaga keseimbangan hidup sebagai founder.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Proyek terpilih -->
+  {mainProject && (
+    <section class="section bg-offwhite">
+      <div class="container">
+        <span class="gold-rule"></span>
+        <h2 class="section-title mb-5">Proyek Terpilih</h2>
+        <ProjectFeature project={mainProject} />
+      </div>
+    </section>
+  )}
+
+  <!-- 8. CTA -->
+  <CtaBand
+    title="Mari berbagi gagasan di forum Anda."
+    text="Saya terbuka untuk berbicara tentang digitalisasi sekolah, AI untuk guru, perjalanan dari sekolah ke startup, dan bisnis yang bermakna."
+    label="Undang Saya Berbicara"
+    href="/kontak?keperluan=undangan_berbicara"
+  />
+</Base>

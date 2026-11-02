@@ -1,0 +1,21 @@
+---
+import Motif from './Motif.astro';
+import { getContent } from '../lib/content';
+interface Props { title?: string; text?: string; label?: string; href?: string }
+const { cta } = await getContent();
+const {
+  title = cta.title,
+  text = cta.text,
+  label = cta.button_label,
+  href = cta.button_href,
+} = Astro.props;
+---
+<section class="cta-band section on-dark">
+  <Motif />
+  <div class="container position-relative">
+    <span class="gold-rule center"></span>
+    <h2>{title}</h2>
+    <p>{text}</p>
+    <a href={href} class="btn btn-light-tw">{label}</a>
+  </div>
+</section>

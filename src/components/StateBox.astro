@@ -1,0 +1,18 @@
+---
+import Icon from './Icon.astro';
+interface Props { type?: 'empty' | 'error' | 'loading'; title?: string; text?: string }
+const { type = 'empty', title, text } = Astro.props;
+const defaults = {
+  empty: { title: 'Belum ada tulisan di sini', text: 'Coba ubah kata kunci atau pilih kategori lain.' },
+  error: { title: 'Konten belum bisa dimuat', text: 'Terjadi kendala saat mengambil data. Silakan muat ulang halaman beberapa saat lagi.' },
+  loading: { title: 'Memuat konten', text: 'Sebentar, tulisan sedang disiapkan.' },
+}[type];
+---
+<div class:list={['state-box', type]} role={type === 'error' ? 'alert' : 'status'}>
+  <span class="state-icon">
+    {type === 'loading' ? <span class="spinner"></span> : <Icon name={type === 'error' ? 'alert' : 'doc'} size={22} />}
+  </span>
+  <h3>{title ?? defaults.title}</h3>
+  <p class="mb-0">{text ?? defaults.text}</p>
+  <slot />
+</div>

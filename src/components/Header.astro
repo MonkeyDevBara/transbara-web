@@ -1,0 +1,63 @@
+---
+import Icon from './Icon.astro';
+import type { Content } from '../lib/content';
+interface Props { content: Content }
+const { content } = Astro.props;
+const { header } = content;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const nav = [
+  { href: '/', label: 'Beranda' },
+  { href: '/tentang', label: 'Tentang' },
+  { href: '/artikel', label: 'Artikel' },
+  { href: '/proyek', label: 'Proyek' },
+  { href: '/kontak', label: 'Kontak' },
+];
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="wordmark" aria-label={`${content.site.name}, ke beranda`}>
+      <span class="wm-name">{content.site.name}</span>
+      <span class="wm-desc">{header.descriptor}</span>
+    </a>
+    <nav class="main-nav" aria-label="Navigasi utama">
+      <ul>
+        {nav.map((n) => (
+          <li><a href={n.href} class:list={['nav-item-link', isActive(n.href) && 'active']} aria-current={isActive(n.href) ? 'page' : undefined}>{n.label}</a></li>
+        ))}
+      </ul>
+      <a href={header.cta_href} class="btn btn-primary btn-sm">{header.cta_label}</a>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Buka menu">
+      <span class="i-open"><Icon name="menu" size={22} /></span>
+      <span class="i-close" hidden><Icon name="close" size={22} /></span>
+    </button>
+  </div>
+  <div id="mobile-nav" class="mobile-nav" aria-label="Navigasi seluler">
+    <nav>
+      <ul>
+        {nav.map((n) => (
+          <li><a href={n.href} class:list={[isActive(n.href) && 'active']} aria-current={isActive(n.href) ? 'page' : undefined}>{n.label}<Icon name="arrow" /></a></li>
+        ))}
+      </ul>
+      <a href={header.cta_href} class="btn btn-primary">{header.cta_label}</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const panel = document.getElementById('mobile-nav');
+  const setOpen = (open: boolean) => {
+    if (!btn || !panel) return;
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
+    panel.classList.toggle('open', open);
+    document.body.classList.toggle('nav-open', open);
+    btn.querySelector<HTMLElement>('.i-open')!.hidden = open;
+    btn.querySelector<HTMLElement>('.i-close')!.hidden = !open;
+  };
+  btn?.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+  window.matchMedia('(min-width: 992px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
+</script>

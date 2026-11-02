@@ -1,0 +1,13 @@
+---
+import type { Article } from '../lib/data';
+import Motif from './Motif.astro';
+interface Props { article: Article; shape?: 'default' | 'tall' | 'wide'; eager?: boolean }
+const { article, shape = 'default', eager = false } = Astro.props;
+// Variasi warna per kategori, agar thumbnail tidak seragam.
+const variant = ((article.category?.sort_order ?? 1) - 1) % 4;
+---
+<div class:list={['cover', `v${variant}`, shape !== 'default' && `cover-${shape}`]}>
+  {article.cover_url && <img src={article.cover_url} alt={article.cover_alt ?? ''} loading={eager ? 'eager' : 'lazy'} />}
+  {!article.cover_url && <Motif />}
+  <span class="cover-cat">{article.category?.name ?? 'Catatan'}</span>
+</div>

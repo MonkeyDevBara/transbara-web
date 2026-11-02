@@ -1,0 +1,25 @@
+---
+import { getContent } from '../lib/content';
+interface Props { variant?: 'inline' | 'card' }
+const { variant = 'inline' } = Astro.props;
+const { hero } = await getContent();
+---
+{variant === 'inline' ? (
+  <div class="author-block">
+    <span class="avatar-tw"><img src={hero.portrait} alt="" /></span>
+    <span>
+      <span class="a-name">Transbara Wahyu</span>
+      <span class="a-role">Founder SIDIGS · Mantan kepala sekolah</span>
+    </span>
+  </div>
+) : (
+  <aside class="author-card author-block" aria-label="Tentang penulis">
+    <span class="avatar-tw"><img src={hero.portrait} alt="Potret Transbara Wahyu" /></span>
+    <div>
+      <span class="eyebrow" style="margin-bottom:.35rem">Ditulis oleh</span>
+      <h3 class="h4 mb-2">Transbara Wahyu</h3>
+      <p class="mb-3" style="color:#3A4452">Founder SIDIGS dan mantan kepala sekolah. Menulis tentang pendidikan, teknologi, kewirausahaan, dan bertumbuh sebagai Muslimpreneur.</p>
+      <a href="/tentang" class="text-link">Kenali saya lebih jauh <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </aside>
+)}

@@ -1,0 +1,44 @@
+---
+---
+<div class="newsletter">
+  <span class="eyebrow">Catatan berkala</span>
+  <h3 class="h3 mb-2">Terima tulisan baru lewat email.</h3>
+  <p class="text-muted-tw mb-3">Tanpa spam. Hanya catatan yang menurut saya layak dibagikan.</p>
+  <form class="newsletter-form" novalidate>
+    <label for="nl-email" class="sr-only">Alamat email</label>
+    <input id="nl-email" type="email" name="email" class="form-control" placeholder="nama@email.com" autocomplete="email" required />
+    <button type="submit" class="btn btn-primary">Berlangganan</button>
+  </form>
+  <p class="form-status" role="status" aria-live="polite"></p>
+</div>
+
+<script>
+  import { supabase } from '../lib/supabase';
+  document.querySelectorAll<HTMLFormElement>('.newsletter-form').forEach((form) => {
+    const status = form.parentElement!.querySelector<HTMLElement>('.form-status')!;
+    const btn = form.querySelector<HTMLButtonElement>('button')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+      status.className = 'form-status';
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        status.textContent = 'Mohon masukkan alamat email yang valid.';
+        status.classList.add('err');
+        return;
+      }
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Mengirim';
+      const { error } = await supabase.from('newsletter_subscribers').insert({ email });
+      btn.disabled = false;
+      btn.textContent = 'Berlangganan';
+      if (error && error.code !== '23505') {
+        status.textContent = 'Maaf, terjadi kendala. Silakan coba lagi sebentar lagi.';
+        status.classList.add('err');
+        return;
+      }
+      status.textContent = 'Terima kasih. Email Anda sudah tercatat.';
+      status.classList.add('ok');
+      form.reset();
+    });
+  });
+</script>
