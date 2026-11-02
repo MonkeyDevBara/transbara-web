@@ -44,7 +44,7 @@
 @media (min-width: 960px) {
   .hero { padding-top: 24px; }
   .hero__in { min-height: calc(100svh - var(--nav-h) - 24px); min-height: max(640px, calc(100svh - var(--nav-h) - 24px)); grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto auto;
-    grid-template-areas: 'eyes eyes eyes' '. . .' 'copy . side' 'bar bar bar'; column-gap: 24px; }
+    grid-template-areas: 'eyes eyes eyes' '. . .' 'copy side side' 'bar bar bar'; column-gap: 24px; container-type: inline-size; }
   .hero__stage { position: absolute; inset: 0; height: auto; grid-area: unset; }
   .hero__wordmask { top: 5%; }
   .hero__word { font-size: clamp(190px, 25.5vw, 400px); }
@@ -53,7 +53,9 @@
   .hero__copy { align-self: end; padding-bottom: 8px; }
   .hero__name { font-size: clamp(56px, 5.9vw, 88px); white-space: nowrap; }
   .hero__side::before { content: ''; position: absolute; inset: -18px -28px -10px -22px; z-index: -1; pointer-events: none; background: linear-gradient(90deg, rgba(5, 7, 11, 0), rgba(5, 7, 11, .78) 26%, rgba(5, 7, 11, .78)); }
-  .hero__side { align-self: end; margin-top: 0; padding-bottom: 8px; }
+  // Kolom angka dimulai tepat di huruf terakhir (R) kata besar: R berada 1.212 x font-size di kanan tengah.
+  .hero__side { align-self: end; margin-top: 0; padding-bottom: 8px;
+    margin-left: calc(50cqw + 1.212 * clamp(190px, 25.5vw, 400px) - (100cqw - 48px) / 3.05 - 24px); }
   .hero__scroll { display: inline-flex; }
 }
 
