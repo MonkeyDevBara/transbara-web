@@ -1,0 +1,11 @@
+---
+interface Logo { src: string; alt: string; w: number; h: number }
+interface Props { items: Logo[]; label: string; reverse?: boolean; wide?: boolean }
+const { items, label, reverse = false, wide = false } = Astro.props;
+---
+<div class:list={['marquee', reverse && 'marquee--rev', wide && 'marquee--wide']} role="group" aria-label={label}>
+  <div class="marquee__track">
+    {items.map((l) => <img src={l.src} alt={l.alt} width={l.w} height={l.h} loading="lazy" decoding="async" />)}
+    {items.map((l) => <img src={l.src} alt="" aria-hidden="true" width={l.w} height={l.h} loading="lazy" decoding="async" />)}
+  </div>
+</div>

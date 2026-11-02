@@ -1,0 +1,13 @@
+---
+import Icon from './Icon.astro';
+interface Props { label: string; linkLabel?: string; linkHref?: string; id?: string; level?: 'h1' | 'h2' }
+const { label, linkLabel, linkHref, id, level = 'h2' } = Astro.props;
+const H = level;
+---
+<header class="sec-head">
+  <p class="eyebrow reveal">{label}</p>
+  <div class="sec-head__top">
+    <H class="display display--lg reveal" id={id}><slot /></H>
+    {linkLabel && linkHref && <a class="sec-head__link reveal" href={linkHref}>{linkLabel}<Icon name="arrow-right" /></a>}
+  </div>
+</header>

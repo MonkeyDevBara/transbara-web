@@ -1,0 +1,33 @@
+---
+interface Item { period: string; role: string; org?: string; text: string }
+interface Props { items: Item[]; openFirst?: boolean; label?: string }
+const { items, openFirst = true, label = 'Perjalanan' } = Astro.props;
+const uid = 'acc' + Math.random().toString(36).slice(2, 7);
+---
+<div class="acc" data-acc aria-label={label}>
+  {items.map((it, i) => it.text ? (
+    <div class:list={['acc__item', 'reveal', openFirst && i === 0 && 'is-open']} style={`--i:${Math.min(i, 5)}`}>
+      <h3>
+        <button class="acc__btn" type="button" aria-expanded={openFirst && i === 0 ? 'true' : 'false'} aria-controls={`${uid}-${i}`} id={`${uid}-b${i}`}>
+          <span class="acc__row">
+            <span class="acc__period">{it.period}</span>
+            <span class="acc__role">{it.role}{it.org && <span class="acc__org">{it.org}</span>}</span>
+          </span>
+          <span class="acc__ic" aria-hidden="true"></span>
+        </button>
+      </h3>
+      <div class="acc__panel" id={`${uid}-${i}`} role="region" aria-labelledby={`${uid}-b${i}`} inert={!(openFirst && i === 0)}>
+        <div><p class="acc__body">{it.text}</p></div>
+      </div>
+    </div>
+  ) : (
+    <div class="acc__item acc__item--static reveal" style={`--i:${Math.min(i, 5)}`}>
+      <h3 class="acc__btn acc__btn--static">
+        <span class="acc__row">
+          <span class="acc__period">{it.period}</span>
+          <span class="acc__role">{it.role}{it.org && <span class="acc__org">{it.org}</span>}</span>
+        </span>
+      </h3>
+    </div>
+  ))}
+</div>

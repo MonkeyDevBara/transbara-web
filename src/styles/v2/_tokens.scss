@@ -1,0 +1,46 @@
+// ---------- Font (self-host, subset Latin) ----------
+@font-face { font-family: 'Anton'; src: url('/fonts/anton-latin.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Manrope'; src: url('/fonts/manrope-latin.woff2') format('woff2'); font-weight: 300 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Caveat'; src: url('/fonts/caveat-latin.woff2') format('woff2'); font-weight: 400 700; font-style: normal; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+
+  // ---------- Warna ----------
+  --bg: #05070B;
+  --bg-2: #0A0F1A;
+  --bg-3: #0F1626;
+  --line: #18223A;
+  --line-2: #26355A;
+  --navy-900: #0A1D4A;
+  --navy-700: #123C8F;
+  --accent: #2F6BFF;          // elemen besar, titik judul, progress bar
+  --accent-strong: #2559E0;   // latar tombol (teks putih 5.9:1)
+  --accent-soft: #7FA6FF;     // semua teks aksen kecil
+  --text: #EEF2F8;
+  --text-soft: #D9DFEA;       // teks baca panjang
+  --muted: #8A94A8;
+  --focus: #7FA6FF;
+  --danger: #FF8A99;           // pesan galat form (8.6:1 di --bg)
+
+  // ---------- Tipografi ----------
+  --font-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-hand: 'Caveat', 'Segoe Script', cursive;
+
+  // ---------- Layout ----------
+  --container: 1240px;
+  --gutter: 16px;
+  --nav-h: 64px;
+  --section-gap: clamp(96px, 12vw, 160px);
+  --radius: 2px;
+
+  // ---------- Gerak ----------
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --d-fast: 150ms;
+  --d-med: 300ms;
+  --d-slow: 700ms;
+
+  @media (min-width: 768px) { --gutter: 40px; --nav-h: 72px; }
+}

@@ -1,0 +1,17 @@
+---
+// Header halaman dalam: breadcrumb, label, judul display, pengantar.
+import { fmtTitle } from '../../lib/format';
+interface Props { crumbs: { name: string; href?: string }[]; label?: string; title: string; intro?: string }
+const { crumbs, label, title, intro } = Astro.props;
+---
+<header class="page-head">
+  <div class="container">
+    <nav aria-label="Breadcrumb">
+      <ol class="crumbs">{crumbs.map((c, i) => <li>{c.href && i < crumbs.length - 1 ? <a href={c.href}>{c.name}</a> : <span aria-current="page">{c.name}</span>}</li>)}</ol>
+    </nav>
+    {label && <p class="eyebrow eyebrow--accent reveal">{label}</p>}
+    <h1 class="display display--xl reveal" set:html={fmtTitle(title)}></h1>
+    {intro && <p class="lead reveal">{intro}</p>}
+    <slot />
+  </div>
+</header>

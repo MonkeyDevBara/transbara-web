@@ -1,0 +1,12 @@
+---
+interface Props { sign?: string; foot?: string }
+const { sign, foot } = Astro.props;
+---
+<figure class="quote-card reveal">
+  <span class="quote-card__mark" aria-hidden="true">“</span>
+  <blockquote class="quote-card__text"><slot /></blockquote>
+  <div>
+    {sign && <p class="quote-card__sign">{sign}</p>}
+    {foot && <p class="quote-card__foot"><span>{foot}</span><span aria-hidden="true">✳</span></p>}
+  </div>
+</figure>

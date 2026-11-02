@@ -18,14 +18,6 @@ export default defineConfig({
   devToolbar: { enabled: false },
   integrations: [preact()],
   vite: {
-    css: {
-      preprocessorOptions: {
-        scss: {
-          // Argon/Bootstrap 4 masih memakai sintaks Sass lama; sembunyikan peringatan deprecation.
-          quietDeps: true,
-          silenceDeprecations: ['import', 'global-builtin', 'color-functions', 'slash-div', 'legacy-js-api', 'if-function', 'function-units', 'abs-percent', 'strict-unary'],
-        },
-      },
-    },
+    css: { preprocessorOptions: { scss: { quietDeps: true } } },
   },
 });

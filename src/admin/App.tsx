@@ -18,6 +18,7 @@ const NAV = [
   { route: '', label: 'Ringkasan' },
   { grp: 'Situs' },
   { route: 'beranda', label: 'Halaman Beranda' },
+  { route: 'halaman', label: 'Halaman Lain' },
   { route: 'pengaturan', label: 'Pengaturan Website' },
   { grp: 'Konten' },
   { route: 'artikel', label: 'Artikel' },
@@ -126,6 +127,7 @@ function Shell({ email }: { email: string }) {
     switch (section ?? '') {
       case '': return <Dashboard />;
       case 'beranda': return <ContentView key="b" group="beranda" />;
+      case 'halaman': return <ContentView key="h" group="halaman" />;
       case 'pengaturan': return <ContentView key="g" group="global" />;
       case 'artikel': return id ? <ArticleEditor id={id} /> : <ArticleList query={route.query} />;
       case 'kategori': return <Taxonomy />;

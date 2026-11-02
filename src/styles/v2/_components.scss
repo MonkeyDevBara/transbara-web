@@ -1,0 +1,199 @@
+// ======================================================
+// Progress bar scroll (A5)
+// ======================================================
+.progress { position: fixed; left: 0; top: 0; right: 0; height: 2px; z-index: 120; pointer-events: none; }
+.progress__bar { height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; will-change: transform; }
+
+// ======================================================
+// Wordmark
+// ======================================================
+.wordmark { font-family: var(--font-display); font-size: 22px; letter-spacing: .02em; text-transform: uppercase; line-height: 1; color: var(--text); display: inline-flex; align-items: baseline; }
+.wordmark .dot { margin-left: 1px; }
+
+// ======================================================
+// Nav
+// ======================================================
+.nav {
+  position: sticky; top: 0; z-index: 100; height: var(--nav-h);
+  background: rgba(5, 7, 11, .72); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid var(--line);
+}
+.nav__in { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.nav__links { display: none; }
+.nav__list { display: flex; gap: clamp(16px, 2.4vw, 36px); }
+.nav__link {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 14px; font-weight: 500; color: var(--muted); transition: color var(--d-fast);
+  &::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); transform: scale(0); transition: transform var(--d-med) var(--ease-out); margin-right: -3px; }
+  &:hover, &:focus-visible { color: var(--text); }
+  &.is-active, &[aria-current='page'] { color: var(--text); &::before { transform: scale(1); } }
+}
+.nav__right { display: flex; align-items: center; gap: 18px; }
+.nav__cta { display: none; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--text); padding: 8px 0; transition: color var(--d-fast); .ic { color: var(--accent-soft); transition: transform var(--d-med) var(--ease-out); } &:hover .ic { transform: translate(2px, -2px); } }
+
+.motion-toggle {
+  display: none; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--muted); padding: 8px 0; transition: color var(--d-fast);
+  &:hover { color: var(--text); }
+  .mt-bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 11px; i { width: 2px; background: currentColor; border-radius: 1px; height: 100%; } }
+  &[aria-pressed='false'] .mt-bars i { height: 45%; opacity: .6; }
+}
+
+.nav__burger { width: 44px; height: 44px; margin-right: -10px; display: inline-grid; place-items: center; color: var(--text); }
+html:not(.js) .nav__burger { display: none; }
+
+// no-JS: tautan tampil sebagai baris yang bisa digulir
+html:not(.js) .nav { height: auto; position: relative; }
+html:not(.js) .nav__in { flex-wrap: wrap; padding-block: 12px; }
+html:not(.js) .nav__links { display: block; width: 100%; overflow-x: auto; }
+
+@media (min-width: 1100px) {
+  .nav__links { display: block; }
+  .nav__cta, .motion-toggle { display: inline-flex; }
+  .nav__burger { display: none; }
+}
+
+// ---------- Menu mobile ----------
+.menu {
+  position: fixed; inset: 0; z-index: 110; background: var(--bg); padding: calc(var(--nav-h) + 24px) var(--gutter) 32px; display: flex; flex-direction: column; overflow-y: auto;
+  opacity: 0; visibility: hidden; transition: opacity var(--d-med) var(--ease-out), visibility 0s linear var(--d-med);
+  &[hidden] { display: none; }
+  &.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+}
+.menu__head { position: absolute; top: 0; left: 0; right: 0; height: var(--nav-h); border-bottom: 1px solid var(--line); }
+.menu__list { margin-block: auto; }
+.menu__link {
+  display: flex; align-items: baseline; gap: 14px; padding: 10px 0; font-family: var(--font-display); font-size: clamp(40px, 11vw, 64px); text-transform: uppercase; line-height: 1.05; letter-spacing: -.01em; color: var(--text);
+  opacity: 0; transform: translateY(14px); transition: opacity var(--d-med) var(--ease-out), transform var(--d-slow) var(--ease-out), color var(--d-fast);
+  transition-delay: calc(var(--i, 0) * 50ms + 80ms);
+  small { font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: .12em; color: var(--accent-soft); min-width: 30px; }
+  &:hover { color: var(--accent); }
+}
+.menu.is-open .menu__link { opacity: 1; transform: none; }
+html[data-motion='off'] .menu__link { opacity: 1; transform: none; }
+.menu__foot { display: grid; gap: 6px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); a { color: var(--text); } }
+body.menu-open { overflow: hidden; }
+
+// ======================================================
+// Tombol
+// ======================================================
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 22px; font-size: 14px; font-weight: 700; letter-spacing: .01em; border-radius: var(--radius);
+  transition: background var(--d-med) var(--ease-out), border-color var(--d-med), color var(--d-fast), transform var(--d-med) var(--ease-out); will-change: transform;
+  .ic { width: 16px; height: 16px; transition: transform var(--d-med) var(--ease-out); }
+  &:hover .ic--down { transform: translateY(3px); }
+  &:hover .ic--ur { transform: translate(2px, -2px); }
+}
+.btn--primary { background: var(--accent-strong); color: #fff; &:hover { background: var(--navy-700); } }
+.btn--ghost { border: 1px solid var(--line-2); color: var(--text); &:hover { border-color: var(--accent); background: rgba(47, 107, 255, .08); } }
+.btn--lg { min-height: 56px; padding: 0 28px; font-size: 15px; }
+.btn--link {
+  min-height: 0; padding: 4px 0; color: var(--text); background: none;
+  background-image: linear-gradient(var(--accent), var(--accent)); background-size: 0 1px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size var(--d-med) var(--ease-out), color var(--d-fast);
+  &:hover { background-size: 100% 1px; color: #fff; }
+}
+// garis bawah tumbuh (A8) untuk tautan teks biasa
+.u-link { background-image: linear-gradient(currentColor, currentColor); background-size: 0 1px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size var(--d-med) var(--ease-out); &:hover, &:focus-visible { background-size: 100% 1px; } }
+
+// ======================================================
+// Section header
+// ======================================================
+.sec-head { display: grid; gap: 20px; padding-bottom: clamp(28px, 4vw, 48px); margin-bottom: clamp(28px, 4vw, 48px); border-bottom: 1px solid var(--line); }
+.sec-head__top { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.sec-head__link { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text); .ic { color: var(--accent-soft); transition: transform var(--d-med) var(--ease-out); } &:hover .ic { transform: translateX(3px); } }
+
+// ======================================================
+// Statistik
+// ======================================================
+.stats { display: grid; }
+.stat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.stat__num { font-family: var(--font-display); font-size: clamp(48px, 6vw, 84px); line-height: .9; color: var(--text); font-variant-numeric: tabular-nums; sup { font-size: .45em; color: var(--accent); vertical-align: top; position: relative; top: .1em; margin-left: 2px; } }
+.stat__label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); max-width: 16ch; line-height: 1.5; }
+
+// ======================================================
+// Chip / tag
+// ======================================================
+.chip { display: inline-flex; align-items: center; padding: 6px 12px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--line-2); color: var(--text-soft); border-radius: 2px; }
+.chip--solid { background: rgba(5, 7, 11, .72); border-color: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.chip--accent { border-color: var(--accent); color: var(--accent-soft); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 0 0 rgba(47, 107, 255, .6); animation: pulse 2.4s var(--ease-out) infinite; vertical-align: 1px; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(47, 107, 255, .6); } 70%, 100% { box-shadow: 0 0 0 10px rgba(47, 107, 255, 0); } }
+
+// ======================================================
+// Badge ✳ (A10)
+// ======================================================
+.badge-spin { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line-2); color: var(--accent-soft); .ic { width: 20px; height: 20px; animation: spin 20s linear infinite; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ======================================================
+// Kartu kutipan
+// ======================================================
+.quote-card {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; min-height: 340px; padding: clamp(24px, 3vw, 40px);
+  background: linear-gradient(155deg, #123C8F 0%, #0A1D4A 55%, #071331 100%); border: 1px solid rgba(127, 166, 255, .18);
+  &::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(120deg, transparent 0 28px, rgba(255, 255, 255, .025) 28px 56px); pointer-events: none; }
+  > * { position: relative; z-index: 1; }
+}
+.quote-card__mark { font-family: var(--font-display); font-size: 72px; line-height: .6; color: var(--accent-soft); }
+.quote-card__text { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.35; font-weight: 500; color: var(--text); }
+.quote-card__sign { font-family: var(--font-hand); font-size: clamp(30px, 3vw, 42px); color: #fff; }
+.quote-card__foot { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-soft); }
+
+// ======================================================
+// Accordion (A12)
+// ======================================================
+.acc { border-top: 1px solid var(--line); }
+.acc__item { border-bottom: 1px solid var(--line); }
+.acc__btn { width: 100%; display: grid; grid-template-columns: 1fr 28px; gap: 16px; align-items: center; padding: 22px 0; text-align: left;
+  &:hover .acc__role { color: #fff; }
+}
+.acc__row { display: grid; gap: 4px 32px; @media (min-width: 768px) { grid-template-columns: 170px 1fr; align-items: baseline; } }
+.acc__period { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.acc__item.is-open .acc__period { color: var(--accent-soft); }
+.acc__role { font-size: clamp(18px, 1.8vw, 22px); font-weight: 600; color: var(--text); transition: color var(--d-fast); }
+.acc__org { display: block; font-size: 13px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.acc__ic { position: relative; width: 14px; height: 14px; justify-self: end; color: var(--muted);
+  &::before, &::after { content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 1.5px; background: currentColor; transition: transform var(--d-med) var(--ease-out); }
+  &::after { transform: rotate(90deg); }
+}
+.acc__item.is-open .acc__ic::after { transform: rotate(0deg); }
+.acc__item.is-open .acc__ic { color: var(--accent-soft); }
+.acc__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--d-med) var(--ease-out), opacity var(--d-med); opacity: 0; }
+.acc__item.is-open .acc__panel { grid-template-rows: 1fr; opacity: 1; }
+.acc__panel > div { overflow: hidden; }
+.acc__btn--static { display: block; margin: 0; padding: 22px 0; font: inherit; }
+.acc__body { padding: 0 0 24px; color: var(--text-soft); max-width: 62ch; @media (min-width: 768px) { margin-left: 202px; } }
+html:not(.js) .acc__panel { grid-template-rows: 1fr; opacity: 1; }
+
+// ======================================================
+// Baris kontak
+// ======================================================
+.contact-row { display: grid; grid-template-columns: 40px 1fr 20px; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); transition: border-color var(--d-med);
+  &:hover { border-color: var(--accent); .contact-row__go { transform: translate(2px, -2px); color: var(--accent-soft); } }
+}
+.contact-row__ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-2); color: var(--accent-soft); .ic { width: 16px; height: 16px; } }
+.contact-row__label { display: block; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.contact-row__val { font-size: 16px; font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.contact-row__go { color: var(--muted); transition: transform var(--d-med) var(--ease-out), color var(--d-fast); .ic { width: 16px; height: 16px; } }
+
+// ======================================================
+// Footer
+// ======================================================
+.footer { margin-top: var(--section-gap); border-top: 1px solid var(--line); padding-block: 28px; }
+.footer__in { display: grid; gap: 20px; align-items: center; @media (min-width: 768px) { grid-template-columns: auto 1fr auto auto; gap: 32px; } }
+.footer__copy { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); @media (min-width: 768px) { text-align: center; } }
+.footer__social { display: flex; gap: 12px; }
+.footer__social a, .footer__top { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line-2); border-radius: 50%; color: var(--text-soft); transition: border-color var(--d-fast), color var(--d-fast), background var(--d-fast);
+  &:hover { border-color: var(--accent); color: #fff; background: rgba(47, 107, 255, .12); } .ic { width: 16px; height: 16px; }
+}
+
+// ======================================================
+// Design-system (halaman referensi)
+// ======================================================
+.ds-block { padding-block: 48px; border-bottom: 1px solid var(--line); }
+.ds-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.swatch { border: 1px solid var(--line); background: var(--bg-2);
+  &__c { height: 84px; border-bottom: 1px solid var(--line); }
+  &__m { padding: 12px 14px; font-size: 13px; code { color: var(--accent-soft); font-size: 12px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-variant-ligatures: none; } .swatch__n { color: var(--text); font-weight: 700; } p { color: var(--muted); font-size: 12px; margin-top: 2px; } }
+}
+.ds-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.ds-note { font-size: 13px; color: var(--muted); max-width: 70ch; margin-top: 16px; }

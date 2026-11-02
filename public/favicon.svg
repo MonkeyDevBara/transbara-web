@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#16325C"/><text x="32" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="30" fill="#fff">TW</text><rect x="18" y="50" width="28" height="2" fill="#C5A46D"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Transbara">
+  <rect width="64" height="64" rx="14" fill="#0A1D4A"/>
+  <g transform="translate(17.536 52.480) scale(0.02327 -0.02327)">
+    <path d="M229 0V1422H20V1760H790V1422H581V0Z" fill="#FFFFFF"/>
+    <path d="M865 1V299H1223V1Z" fill="#2F6BFF"/>
+  </g>
+</svg>

@@ -1,111 +1,111 @@
 ---
-import Base from '../layouts/Base.astro';
-import Portrait from '../components/Portrait.astro';
-import ProjectFeature from '../components/ProjectFeature.astro';
-import CtaBand from '../components/CtaBand.astro';
-import { getProjects, safe } from '../lib/data';
+import BaseV2 from '../layouts/BaseV2.astro';
+import Button from '../components/v2/Button.astro';
+import SectionHeader from '../components/v2/SectionHeader.astro';
+import Accordion from '../components/v2/Accordion.astro';
+import CtaBand from '../components/v2/CtaBand.astro';
+import QuoteCard from '../components/v2/QuoteCard.astro';
+import { getContent } from '../lib/content';
+import { getTopics, safe } from '../lib/data';
+import { fmtTitle } from '../lib/format';
 
-const projects = await safe(getProjects, []);
-const mainProject = projects.data.find((p) => p.is_featured);
-const values = [
-  { title: 'Manusia lebih dulu', text: 'Teknologi dan bisnis hanya berarti jika melayani orang-orang di dalamnya.' },
-  { title: 'Bertumbuh dengan sadar', text: 'Kecepatan penting, tetapi ritme dan arah jauh lebih penting.' },
-  { title: 'Jujur dalam keputusan', text: 'Keputusan yang baik diambil dengan jujur, adil, dan siap dipertanggungjawabkan.' },
-  { title: 'Mencari keberkahan', text: 'Pertumbuhan yang bermakna adalah pertumbuhan yang membawa kebaikan.' },
-];
+const content = await getContent();
+const { page_tentang: t, home_story: story, home_about: about, home_hero: hero } = content;
+const { data: topics } = await safe(getTopics, []);
+const words = (l: string[]) => (l ?? []).filter((x) => String(x ?? '').trim());
+const timeline = (t.timeline ?? []).filter((x) => String(x.role ?? '').trim());
+const edu = (about.education ?? []).filter((x) => String(x.school ?? '').trim());
+const crumbs = [{ name: 'Beranda', href: '/' }, { name: 'Tentang' }];
+const isDefaultPortrait = hero.portrait.startsWith('/v2/img/portrait-');
 ---
-<Base title="Tentang" description="Cerita Transbara Wahyu: mantan kepala sekolah, founder SIDIGS, dan Muslimpreneur yang menulis tentang pendidikan, bisnis, dan bertumbuh.">
-  <!-- 1. Perkenalan personal -->
-  <section class="hero">
+<BaseV2 title="Tentang" description={t.lead} crumbs={crumbs} ogType="profile">
+  <header class="page-head about-hero">
     <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-7 pr-lg-5">
-          <nav aria-label="Breadcrumb"><ol class="tw-breadcrumb"><li><a href="/">Beranda</a></li><li aria-current="page">Tentang</li></ol></nav>
-          <span class="gold-rule"></span>
-          <h1 class="hero-title" style="font-size: clamp(2.5rem, 5.5vw, 4rem);">Saya Transbara Wahyu.</h1>
-          <p class="lead-serif mb-4">Seorang entrepreneur yang tertarik pada persimpangan antara teknologi, pendidikan, dan nilai-nilai Islam.</p>
-          <p class="hero-sub">Saya pernah menjadi kepala sekolah, lalu membangun SIDIGS untuk membantu sekolah bekerja lebih tertata. Di sini saya menulis tentang perjalanan itu: membangun bisnis, mentransformasi pendidikan, dan bertumbuh sebagai Muslimpreneur.</p>
+      <nav aria-label="Breadcrumb"><ol class="crumbs"><li><a href="/">Beranda</a></li><li><span aria-current="page">Tentang</span></li></ol></nav>
+      <div class="page-head__grid">
+        <div>
+          <p class="eyebrow eyebrow--accent reveal">{t.label}</p>
+          <h1 class="display display--xl reveal" set:html={fmtTitle(t.title)}></h1>
+          <p class="lead reveal">{t.lead}</p>
+          <div class="hero__cta reveal">
+            <Button href="/kontak?keperluan=undangan_berbicara" icon="arrow-ur">{t.cta_label}</Button>
+            {hero.cv_url && <Button href={hero.cv_url} variant="ghost" icon="download">Download CV</Button>}
+          </div>
         </div>
-        <div class="col-lg-5"><Portrait eager /></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Filosofi dan nilai -->
-  <section class="section bg-offwhite">
-    <div class="container">
-      <div class="row mb-5">
-        <div class="col-lg-7">
-          <span class="gold-rule"></span>
-          <h2 class="section-title">Filosofi dan Nilai</h2>
-          <p class="section-intro mb-3">Slow living bagi saya bukan berarti bekerja lebih sedikit, melainkan bekerja dengan lebih sadar.</p>
-          <span class="sample-label">Contoh konten: sesuaikan dengan nilai yang Anda pegang</span>
-        </div>
-      </div>
-      <ol class="focus-list">
-        {values.map((v, i) => (
-          <li class="focus-item">
-            <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{v.title}</h3>
-            <p>{v.text}</p>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </section>
-
-  <!-- 3–5. Narasi -->
-  <section class="section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-3 d-none d-lg-block">
-          <nav class="toc" aria-label="Bagian cerita">
-            <span class="toc-title">Cerita</span>
-            <ol>
-              <li><a href="#kewirausahaan">Perjalanan kewirausahaan</a></li>
-              <li><a href="#edutech">Dari sekolah ke edutech</a></li>
-              <li><a href="#nilai">Nilai Islam dan bisnis</a></li>
-              <li><a href="#eksplorasi">Yang sedang dieksplorasi</a></li>
-            </ol>
-          </nav>
-        </div>
-        <div class="col-lg-8 offset-lg-1 prose">
-          <h2 id="kewirausahaan">Perjalanan Kewirausahaan</h2>
-          <p>Membangun bisnis mengajarkan saya untuk mendengar lebih banyak, memutuskan dengan lebih jujur, dan bersabar dengan proses.</p>
-          <div class="placeholder-box mb-4"><strong>Isi cerita asli</strong>[Ceritakan awal mula Anda memulai bisnis: momen, keputusan, atau tantangan nyata yang membentuk cara Anda membangun usaha.]</div>
-
-          <h2 id="edutech">Dari Ruang Kepala Sekolah ke Edutech</h2>
-          <p>Latar sebagai mantan kepala sekolah adalah poros cerita saya. Dari ruang itulah saya melihat langsung bagaimana sekolah bekerja: tantangannya, orang-orangnya, dan pekerjaan yang sering tidak terlihat. Pengalaman itu menjadi alasan SIDIGS lahir.</p>
-          <div class="placeholder-box mb-4"><strong>Isi cerita asli</strong>[Ceritakan masa Anda menjadi kepala sekolah: di mana, berapa lama, dan masalah konkret apa yang membuat Anda memutuskan membangun SIDIGS.]</div>
-          <blockquote class="pull-quote"><p>Perubahan di dunia pendidikan selalu dimulai dari manusia, bukan dari teknologi.</p></blockquote>
-
-          <h2 id="nilai">Nilai Islam dan Bisnis yang Bermakna</h2>
-          <p>Saya percaya bisnis dapat menjadi jalan kebaikan: bertumbuh dengan sehat, berlaku adil kepada mitra dan tim, serta mencari keberkahan dalam setiap langkah, tanpa harus kehilangan ambisi.</p>
-          <div class="placeholder-box mb-4"><strong>Isi cerita asli</strong>[Ceritakan bagaimana nilai Islam memengaruhi keputusan bisnis Anda, misalnya satu keputusan sulit yang Anda ambil karena memegang nilai tertentu.]</div>
-
-          <h2 id="eksplorasi">Yang Sedang Saya Eksplorasi</h2>
-          <p>Saat ini saya sedang banyak belajar tentang adopsi AI di dunia pendidikan, cara membangun produk digital yang benar-benar dipakai, strategi bisnis yang berkelanjutan, dan bagaimana menjaga keseimbangan hidup sebagai founder.</p>
+        <div class="about-portrait reveal">
+          {isDefaultPortrait
+            ? <img src="/v2/img/portrait-768.webp" srcset="/v2/img/portrait-480.webp 480w, /v2/img/portrait-768.webp 768w" sizes="(min-width: 960px) 420px, 80vw" alt={hero.portrait_alt} width="768" height="1223" loading="lazy" decoding="async" />
+            : <img src={hero.portrait} alt={hero.portrait_alt} width="881" height="1403" loading="lazy" decoding="async" />}
         </div>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- 7. Proyek terpilih -->
-  {mainProject && (
-    <section class="section bg-offwhite">
+  {words(t.story).length > 0 && (
+    <section class="section" id="cerita" aria-labelledby="h-cerita">
       <div class="container">
-        <span class="gold-rule"></span>
-        <h2 class="section-title mb-5">Proyek Terpilih</h2>
-        <ProjectFeature project={mainProject} />
+        <div class="story-text">
+          <div class="story-text__side"><div><h2 class="display display--lg reveal" id="h-cerita" set:html={fmtTitle(t.story_title)}></h2></div></div>
+          <div class="story-text__body" data-stagger>{words(t.story).map((p) => <p class="reveal">{p}</p>)}</div>
+        </div>
       </div>
     </section>
   )}
 
-  <!-- 8. CTA -->
-  <CtaBand
-    title="Mari berbagi gagasan di forum Anda."
-    text="Saya terbuka untuk berbicara tentang digitalisasi sekolah, AI untuk guru, perjalanan dari sekolah ke startup, dan bisnis yang bermakna."
-    label="Undang Saya Berbicara"
-    href="/kontak?keperluan=undangan_berbicara"
-  />
-</Base>
+  <section class="section" id="nilai" aria-labelledby="h-nilai">
+    <div class="container">
+      <SectionHeader label="Nilai" id="h-nilai"><Fragment set:html={fmtTitle(story.values_label)} /></SectionHeader>
+      <div class="story-text" style="margin-bottom:40px">
+        <div></div>
+        <p class="lead reveal">{story.body}</p>
+      </div>
+      <div class="values-row" data-stagger>
+        {words(story.values).map((v, i) => <div class="value-card reveal"><span>{String(i + 1).padStart(2, '0')}</span><h3>{v}</h3></div>)}
+      </div>
+    </div>
+  </section>
+
+  {timeline.length > 0 && (
+    <section class="section" id="perjalanan" aria-labelledby="h-perjalanan">
+      <div class="container">
+        <SectionHeader label="Riwayat" id="h-perjalanan"><Fragment set:html={fmtTitle(t.timeline_title)} /></SectionHeader>
+        <Accordion items={timeline} label="Riwayat perjalanan lengkap" />
+      </div>
+    </section>
+  )}
+
+  <section class="section" id="pendidikan" aria-labelledby="h-pendidikan">
+    <div class="container">
+      <SectionHeader label="Latar belakang" id="h-pendidikan"><Fragment set:html={fmtTitle(about.education_title)} /></SectionHeader>
+      <div class="split2">
+        <div class="reveal">
+          <ul class="edu">{edu.map((e) => <li><em>{e.years}</em><b>{e.school}</b><span>{e.program}</span></li>)}</ul>
+        </div>
+        <div class="reveal">
+          {words(about.skills).length > 0 && <><p class="eyebrow sub-label" style="margin-top:0">Keahlian</p><div class="chips">{words(about.skills).map((s) => <span class="chip">{s}</span>)}</div></>}
+          {words(about.languages).length > 0 && <><p class="eyebrow sub-label">Bahasa</p><div class="chips">{words(about.languages).map((s) => <span class="chip" lang={/[؀-ۿ]/.test(s) ? 'ar' : undefined}>{s}</span>)}</div></>}
+          {words(about.certifications).length > 0 && <><p class="eyebrow sub-label">Sertifikasi</p><div class="chips">{words(about.certifications).map((s) => <span class="chip chip--accent">{s}</span>)}</div></>}
+        </div>
+      </div>
+      <div style="margin-top:56px"><QuoteCard sign={about.signature} foot={about.quote_foot}>{about.quote}</QuoteCard></div>
+    </div>
+  </section>
+
+  {topics.length > 0 && (
+    <section class="section" id="topik" aria-labelledby="h-topik">
+      <div class="container">
+        <SectionHeader label={t.topics_text} id="h-topik"><Fragment set:html={fmtTitle(t.topics_title)} /></SectionHeader>
+        <div class="topics" data-stagger>
+          {topics.map((tp) => (
+            <div class="topic reveal">
+              <div><h3>{tp.title}</h3>{tp.is_signature && <span class="chip chip--accent">Topik andalan</span>}</div>
+              {tp.description && <p>{tp.description}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <CtaBand title={t.cta_title} text={t.cta_text} label={t.cta_label} href="/kontak?keperluan=undangan_berbicara" />
+</BaseV2>

@@ -1,0 +1,19 @@
+---
+import Icon from './Icon.astro';
+interface Props { name: string; tag?: string; cats: string; text?: string; image?: string; link?: string; index: number }
+const { name, tag, cats, text, image, link, index } = Astro.props;
+---
+<article class="work reveal" data-cat={cats} style={`--i:${index % 3}`}>
+  <div class="work__media">
+    {tag && <span class="chip chip--solid work__tag">{tag}</span>}
+    {image && <img src={image} alt="" width="600" height="420" loading="lazy" decoding="async" />}
+  </div>
+  <div class="work__meta">
+    <span class="work__n" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+    <div>
+      <h3 class="work__title">{link ? <a href={link} class="work__link">{name}</a> : name}</h3>
+      {text && <p>{text}</p>}
+    </div>
+    <Icon name="arrow-ur" class="work__go" />
+  </div>
+</article>

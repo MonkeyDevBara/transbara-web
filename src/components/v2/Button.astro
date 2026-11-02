@@ -1,0 +1,10 @@
+---
+import Icon from './Icon.astro';
+interface Props { href?: string; variant?: 'primary' | 'ghost' | 'link'; size?: 'md' | 'lg'; icon?: string; magnetic?: boolean; class?: string; type?: 'button' | 'submit'; [k: string]: any }
+const { href, variant = 'primary', size = 'md', icon, magnetic = false, class: cls = '', type = 'button', ...rest } = Astro.props;
+const classes = ['btn', `btn--${variant}`, size === 'lg' && 'btn--lg', cls];
+const Tag = href ? 'a' : 'button';
+---
+<Tag {...rest} href={href} type={href ? undefined : type} class:list={classes} data-magnetic={magnetic ? '' : undefined}>
+  <slot />{icon && <Icon name={icon} />}
+</Tag>

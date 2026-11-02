@@ -1,137 +1,35 @@
 ---
-import Base from '../layouts/Base.astro';
-import { SOCIAL_LABELS } from '../lib/data';
+import BaseV2 from '../layouts/BaseV2.astro';
+import PageHead from '../components/v2/PageHead.astro';
+import ContactForm from '../components/v2/ContactForm.astro';
+import Icon from '../components/v2/Icon.astro';
 import { getContent } from '../lib/content';
+import { contactInfo, PROFILE } from '../lib/profile';
 
 const content = await getContent();
-const social = content.social as Record<string, string>;
-const purposes = [
-  { value: 'undangan_berbicara', label: 'Undangan berbicara' },
-  { value: 'diskusi_pendidikan', label: 'Diskusi pendidikan' },
-  { value: 'kolaborasi', label: 'Kolaborasi' },
-  { value: 'lainnya', label: 'Lainnya' },
-];
+const p = content.page_kontak;
+const info = contactInfo(content);
+const crumbs = [{ name: 'Beranda', href: '/' }, { name: 'Kontak' }];
 ---
-<Base title="Kontak" description="Hubungi Transbara Wahyu untuk diskusi, undangan berbicara, pertukaran ide, atau kolaborasi.">
-  <section class="page-head">
-    <div class="container">
-      <nav aria-label="Breadcrumb"><ol class="tw-breadcrumb"><li><a href="/">Beranda</a></li><li aria-current="page">Kontak</li></ol></nav>
-      <span class="gold-rule"></span>
-      <h1>Mari Terhubung.</h1>
-      <p class="section-intro">Untuk diskusi, undangan berbicara, pertukaran ide, atau peluang kolaborasi, silakan hubungi saya.</p>
+<BaseV2 title="Kontak" description={p.intro} crumbs={crumbs}>
+  <PageHead crumbs={crumbs} label={p.label} title={p.title} intro={p.intro} />
+  <section class="container page-body">
+    <div class="kontak-grid">
+      <div class="reveal"><ContactForm /></div>
+      <aside class="kontak-side" aria-label="Kontak langsung">
+        <p class="eyebrow reveal">Kontak langsung</p>
+        <div data-stagger>
+          <a class="contact-row reveal" href={`mailto:${info.email}`}><span class="contact-row__ic"><Icon name="mail" /></span><span><span class="contact-row__label">Email</span><span class="contact-row__val">{info.email}</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+          <a class="contact-row reveal" href={info.instagram} target="_blank" rel="noopener noreferrer"><span class="contact-row__ic"><Icon name="instagram" /></span><span><span class="contact-row__label">Instagram</span><span class="contact-row__val">{PROFILE.instagramHandle}</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+          <a class="contact-row reveal" href={info.linkedin} target="_blank" rel="noopener noreferrer"><span class="contact-row__ic"><Icon name="linkedin" /></span><span><span class="contact-row__label">LinkedIn</span><span class="contact-row__val">{PROFILE.linkedinHandle}</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+          <div class="contact-row reveal"><span class="contact-row__ic"><Icon name="pin" /></span><span><span class="contact-row__label">Based in</span><span class="contact-row__val">{content.home_hero.location}</span></span><span></span></div>
+        </div>
+        {p.note && <p class="kontak-side__note reveal">{p.note}</p>}
+      </aside>
     </div>
   </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-7 mb-5 mb-lg-0">
-          <div id="form-alert" class="mb-4" aria-live="polite"></div>
-          <form id="contact-form" novalidate>
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label class="form-label-tw" for="name">Nama</label>
-                <input class="form-control" id="name" name="name" autocomplete="name" required minlength="2" maxlength="120" />
-                <div class="invalid-feedback">Mohon isi nama Anda.</div>
-              </div>
-              <div class="form-group col-md-6">
-                <label class="form-label-tw" for="email">Email</label>
-                <input class="form-control" id="email" name="email" type="email" autocomplete="email" required maxlength="200" />
-                <div class="invalid-feedback">Mohon isi alamat email yang valid.</div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label class="form-label-tw" for="purpose">Jenis keperluan</label>
-                <select class="form-control custom-select" id="purpose" name="purpose">
-                  {purposes.map((p) => <option value={p.value}>{p.label}</option>)}
-                </select>
-              </div>
-              <div class="form-group col-md-6">
-                <label class="form-label-tw" for="subject">Subjek</label>
-                <input class="form-control" id="subject" name="subject" required minlength="2" maxlength="200" />
-                <div class="invalid-feedback">Mohon isi subjek pesan.</div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label-tw" for="message">Pesan</label>
-              <textarea class="form-control" id="message" name="message" rows="6" required minlength="10" maxlength="5000"></textarea>
-              <div class="invalid-feedback">Pesan minimal 10 karakter.</div>
-            </div>
-            <button type="submit" class="btn btn-primary" id="submit-btn">Kirim Pesan</button>
-          </form>
-        </div>
-        <div class="col-lg-4 offset-lg-1">
-          <div class="contact-aside">
-            <span class="eyebrow">Kontak langsung</span>
-            <dl>
-              <dt>Email</dt>
-              <dd>{content.contact.email ? <a href={`mailto:${content.contact.email}`}>{content.contact.email}</a> : 'Belum diatur (placeholder)'}</dd>
-              {Object.entries(SOCIAL_LABELS).map(([k, label]) => (
-                <>
-                  <dt>{label}</dt>
-                  <dd>{social[k] ? <a href={social[k]} target="_blank" rel="noopener">{social[k]}</a> : 'Belum diatur (placeholder)'}</dd>
-                </>
-              ))}
-            </dl>
-            <p class="text-muted-tw mt-4" style="font-size:.875rem">Saya membaca setiap pesan dan akan membalas sesegera mungkin.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</Base>
-
-<script>
-  import { supabase } from '../lib/supabase';
-  import type { ContactPurpose } from '../lib/database.types';
-
-  const form = document.getElementById('contact-form') as HTMLFormElement;
-  const alertBox = document.getElementById('form-alert')!;
-  const btn = document.getElementById('submit-btn') as HTMLButtonElement;
-  const purpose = form.elements.namedItem('purpose') as HTMLSelectElement;
-  const preset = new URLSearchParams(location.search).get('keperluan');
-  if (preset && [...purpose.options].some((o) => o.value === preset)) purpose.value = preset;
-
-  const showAlert = (type: 'ok' | 'err', text: string) => {
-    alertBox.innerHTML = `<div class="form-alert ${type}" role="${type === 'err' ? 'alert' : 'status'}">${text}</div>`;
-    alertBox.scrollIntoView({ block: 'center' });
-  };
-  const validate = (el: HTMLInputElement | HTMLTextAreaElement) => {
-    const ok = el.type === 'email' ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(el.value.trim()) && el.checkValidity() : el.checkValidity() && el.value.trim().length >= (el.minLength > 0 ? el.minLength : 1);
-    el.classList.toggle('is-invalid', !ok);
-    el.setAttribute('aria-invalid', String(!ok));
-    return ok;
-  };
-  const fields = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea')];
-  fields.forEach((f) => f.addEventListener('blur', () => f.value && validate(f)));
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    alertBox.innerHTML = '';
-    const results = fields.map(validate);
-    if (results.includes(false)) {
-      fields[results.indexOf(false)].focus();
-      return;
-    }
-    const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Mengirim…';
-    const { error } = await supabase.from('contact_messages').insert({
-      name: data.name.trim(),
-      email: data.email.trim(),
-      subject: data.subject.trim(),
-      purpose: data.purpose as ContactPurpose,
-      message: data.message.trim(),
-    });
-    btn.disabled = false;
-    btn.textContent = 'Kirim Pesan';
-    if (error) {
-      showAlert('err', 'Maaf, pesan belum terkirim karena ada kendala. Silakan coba lagi beberapa saat lagi.');
-      return;
-    }
-    form.reset();
-    if (preset) purpose.value = preset;
-    showAlert('ok', '<strong>Terima kasih, pesan Anda sudah terkirim.</strong>&nbsp;Saya akan membalas melalui email yang Anda cantumkan.');
-  });
-</script>
+  <script>
+    import { initContactForm } from '../scripts/contact-form';
+    initContactForm({ source: 'halaman Kontak' });
+  </script>
+</BaseV2>

@@ -1,19 +1,23 @@
 ---
-import Base from '../../layouts/Base.astro';
-import Cover from '../../components/Cover.astro';
-import AuthorBlock from '../../components/AuthorBlock.astro';
-import ArticleCard from '../../components/ArticleCard.astro';
-import SampleLabel from '../../components/SampleLabel.astro';
-import Icon from '../../components/Icon.astro';
-import { getArticles, getRelatedIds, formatDate } from '../../lib/data';
+import BaseV2 from '../../layouts/BaseV2.astro';
+import Cover from '../../components/v2/Cover.astro';
+import ArticleCard from '../../components/v2/ArticleCard.astro';
+import Icon from '../../components/v2/Icon.astro';
+import { getContent } from '../../lib/content';
+import { getArticles, getRelatedIds, formatDate, safe } from '../../lib/data';
 import { renderArticle } from '../../lib/markdown';
+import { articleLd, siteBase, abs } from '../../lib/seo';
 
 const { slug } = Astro.params;
-const all = await getArticles();
+const { data: all, error: loadError } = await safe(getArticles, []);
+if (loadError) Astro.response.status = 503;
 const index = all.findIndex((a) => a.slug === slug);
 const article = all[index];
 if (!article) return Astro.rewrite('/404');
 
+const content = await getContent();
+const hero = content.home_hero;
+const avatar = hero.portrait.startsWith('/v2/img/portrait-') ? '/v2/img/portrait-480.webp' : hero.portrait;
 const { html, toc } = renderArticle(article.content);
 const newer = index > 0 ? all[index - 1] : null;
 const older = index < all.length - 1 ? all[index + 1] : null;
@@ -26,88 +30,101 @@ const related = [
   ...all.filter((a) => a.id !== article.id && !manual.includes(a.id) && a.category?.id !== article.category?.id),
 ].slice(0, 3) as typeof all;
 
-const pageUrl = new URL(`/artikel/${article.slug}`, Astro.site ?? Astro.url.origin).toString();
+const base = siteBase(Astro);
+const pageUrl = abs(`/artikel/${article.slug}`, base);
 const enc = encodeURIComponent;
 const updated = article.updated_at && formatDate(article.updated_at) !== formatDate(article.published_at);
+const crumbs = [{ name: 'Beranda', href: '/' }, { name: 'Artikel', href: '/artikel' }, { name: article.title }];
+const ogImg = article.og_image_url ?? article.cover_url;
 ---
-<Base
+<BaseV2
   title={article.seo_title ?? article.title}
   description={article.seo_description ?? article.excerpt ?? undefined}
   canonical={article.canonical_url ?? pageUrl}
-  ogImage={article.og_image_url ?? article.cover_url}
+  ogImage={ogImg}
+  ogType="article"
   noindex={article.noindex}
+  crumbs={crumbs}
+  jsonld={[articleLd(base, article, ogImg)]}
+  publishedAt={article.published_at}
+  modifiedAt={article.updated_at}
 >
   <article>
-    <header class="article-header">
+    <header class="page-head a-head">
       <div class="container">
         <nav aria-label="Breadcrumb">
-          <ol class="tw-breadcrumb">
+          <ol class="crumbs">
             <li><a href="/">Beranda</a></li>
             <li><a href="/artikel">Artikel</a></li>
             {article.category && <li><a href={`/artikel?kategori=${article.category.slug}`}>{article.category.name}</a></li>}
-            <li aria-current="page" class="d-none d-md-inline">{article.title}</li>
           </ol>
         </nav>
-        <div class="d-flex flex-wrap align-items-center" style="gap:.5rem">
-          {article.category && <a class="badge-cat" href={`/artikel?kategori=${article.category.slug}`}>{article.category.name}</a>}
-          {article.is_sample && <SampleLabel />}
+        <div class="acard__meta">
+          {article.category && <a class="cat" href={`/artikel?kategori=${article.category.slug}`}>{article.category.name}</a>}
+          {article.is_sample && <span class="sample-tag">Contoh konten</span>}
         </div>
-        <h1>{article.title}</h1>
+        <h1 class="display">{article.title}</h1>
         {article.subtitle && <p class="subtitle">{article.subtitle}</p>}
-        <div class="article-byline">
-          <AuthorBlock />
-          <div class="article-meta">
+        <div class="a-byline">
+          <div class="author">
+            <span class="author__av"><img src={avatar} alt="" width="46" height="46" /></span>
+            <span><b>Transbara Wahyu</b><small>Founder &amp; CEO SIDIGS</small></span>
+          </div>
+          <div class="a-meta">
             <span>Terbit <time datetime={article.published_at}>{formatDate(article.published_at)}</time></span>
             {updated && <span>Diperbarui <time datetime={article.updated_at}>{formatDate(article.updated_at)}</time></span>}
             {article.reading_minutes && <span>{article.reading_minutes} menit baca</span>}
           </div>
         </div>
-        <figure class="article-cover">
-          <Cover article={article} shape="wide" eager />
-          <figcaption>{article.cover_credit ?? 'Sampul tipografis. Ganti dengan foto atau ilustrasi asli melalui CMS.'}</figcaption>
+        <figure class="a-cover">
+          <Cover article={article} eager />
+          {(article.cover_credit || !article.cover_url) && <figcaption>{article.cover_credit ?? 'Sampul tipografis. Ganti dengan foto atau ilustrasi asli melalui CMS.'}</figcaption>}
         </figure>
       </div>
     </header>
 
     <div class="container">
-      <div class="article-layout">
+      <div class="a-layout">
         {toc.length > 0 && (
           <nav class="toc" aria-label="Daftar isi">
-            <span class="toc-title">Daftar isi</span>
+            <span class="toc__t">Daftar isi</span>
             <ol>{toc.map((t) => <li class={`d${t.depth}`}><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
           </nav>
         )}
         <div>
           {toc.length > 0 && (
-            <details class="toc-mobile">
+            <details class="toc-m">
               <summary>Daftar isi</summary>
               <ol>{toc.map((t) => <li class={`d${t.depth}`}><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
             </details>
           )}
           <div class="prose" set:html={html} />
 
-          {article.tags.length > 0 && (
-            <div class="d-flex flex-wrap mt-5" style="gap:.5rem">
-              {article.tags.map((t) => <span class="role-chip">#{t.name}</span>)}
-            </div>
-          )}
+          {article.tags.length > 0 && <div class="a-tags">{article.tags.map((t) => <span class="chip">#{t.name}</span>)}</div>}
 
-          <div class="d-flex flex-wrap justify-content-between align-items-center my-5" style="gap:1rem">
-            <a href="/artikel" class="text-link"><Icon name="arrow-left" size={16} /> Kembali ke semua artikel</a>
-            <div class="share-bar">
-              <span class="label">Bagikan</span>
-              <a href={`https://wa.me/?text=${enc(article.title + ' ' + pageUrl)}`} target="_blank" rel="noopener" aria-label="Bagikan ke WhatsApp"><Icon name="whatsapp" /></a>
+          <div class="a-foot">
+            <a href="/artikel" class="btn btn--link"><Icon name="arrow-right" class="ic--back" />Kembali ke semua artikel</a>
+            <div class="share">
+              <span class="lbl">Bagikan</span>
+              <a href={`https://wa.me/?text=${enc(article.title + ' ' + pageUrl)}`} target="_blank" rel="noopener" aria-label="Bagikan ke WhatsApp"><Icon name="arrow-ur" /></a>
               <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`} target="_blank" rel="noopener" aria-label="Bagikan ke LinkedIn"><Icon name="linkedin" /></a>
-              <a href={`https://x.com/intent/post?url=${enc(pageUrl)}&text=${enc(article.title)}`} target="_blank" rel="noopener" aria-label="Bagikan ke X"><Icon name="x" /></a>
-              <button type="button" class="copy-link" data-url={pageUrl} aria-label="Salin tautan"><Icon name="link" /></button>
+              <button type="button" class="copy-link" data-url={pageUrl} aria-label="Salin tautan"><Icon name="plus" /></button>
             </div>
           </div>
-          <p class="form-status ok copy-status" role="status" aria-live="polite"></p>
+          <p class="copy-status" role="status" aria-live="polite"></p>
 
-          <AuthorBlock variant="card" />
+          <aside class="author-card" aria-label="Tentang penulis">
+            <span class="author__av"><img src={avatar} alt="Potret Transbara Wahyu" width="72" height="72" loading="lazy" /></span>
+            <div>
+              <p class="eyebrow eyebrow--accent">Ditulis oleh</p>
+              <h3>Transbara Wahyu</h3>
+              <p>Founder &amp; CEO SIDIGS dan mantan kepala sekolah. Menulis tentang pendidikan, teknologi, kewirausahaan, dan bertumbuh sebagai Muslimpreneur.</p>
+              <a href="/tentang" class="btn btn--link" style="margin-top:10px">Kenali saya lebih jauh<Icon name="arrow-ur" /></a>
+            </div>
+          </aside>
 
           {(newer || older) && (
-            <nav class="post-nav mt-5" aria-label="Artikel sebelumnya dan berikutnya">
+            <nav class="post-nav" aria-label="Artikel sebelumnya dan berikutnya">
               {older && <a href={`/artikel/${older.slug}`} class="prev"><small>← Sebelumnya</small><span>{older.title}</span></a>}
               {newer && <a href={`/artikel/${newer.slug}`} class="next"><small>Berikutnya →</small><span>{newer.title}</span></a>}
             </nav>
@@ -118,17 +135,14 @@ const updated = article.updated_at && formatDate(article.updated_at) !== formatD
   </article>
 
   {related.length > 0 && (
-    <section class="section bg-offwhite">
+    <section class="section" aria-labelledby="h-terkait">
       <div class="container">
-        <span class="gold-rule"></span>
-        <h2 class="section-title mb-5">Artikel Terkait</h2>
-        <div class="row">
-          {related.map((a) => <div class="col-md-4 mb-5 mb-md-0"><ArticleCard article={a} variant="compact" /></div>)}
-        </div>
+        <header class="sec-head"><p class="eyebrow">Lanjut membaca</p><div class="sec-head__top"><h2 class="display display--lg" id="h-terkait">Artikel terkait<span class="dot">.</span></h2></div></header>
+        <div class="a-grid">{related.map((a) => <ArticleCard article={a} />)}</div>
       </div>
     </section>
   )}
-</Base>
+</BaseV2>
 
 <script>
   // Sorot item daftar isi sesuai posisi baca.
@@ -136,21 +150,14 @@ const updated = article.updated_at && formatDate(article.updated_at) !== formatD
   const heads = links.map((l) => document.getElementById(decodeURIComponent(l.hash.slice(1)))).filter(Boolean) as HTMLElement[];
   if (heads.length) {
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (!e.isIntersecting) return;
-        links.forEach((l) => l.classList.toggle('active', l.hash === `#${e.target.id}`));
-      });
+      entries.forEach((e) => { if (e.isIntersecting) links.forEach((l) => l.classList.toggle('active', l.hash === `#${e.target.id}`)); });
     }, { rootMargin: '-90px 0px -70% 0px' });
     heads.forEach((h) => io.observe(h));
   }
   const copyBtn = document.querySelector<HTMLButtonElement>('.copy-link');
   const copyStatus = document.querySelector<HTMLElement>('.copy-status');
   copyBtn?.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(copyBtn.dataset.url!);
-      if (copyStatus) copyStatus.textContent = 'Tautan artikel sudah disalin.';
-    } catch {
-      if (copyStatus) copyStatus.textContent = 'Tautan tidak dapat disalin otomatis.';
-    }
+    try { await navigator.clipboard.writeText(copyBtn.dataset.url!); if (copyStatus) copyStatus.textContent = 'Tautan artikel sudah disalin.'; }
+    catch { if (copyStatus) copyStatus.textContent = 'Tautan tidak dapat disalin otomatis.'; }
   });
 </script>

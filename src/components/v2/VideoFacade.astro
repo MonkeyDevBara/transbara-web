@@ -1,0 +1,15 @@
+---
+// Video YouTube dengan "facade": tidak ada yang dimuat/diputar dari YouTube sampai pengunjung menekan tombol putar.
+interface Props { id: string; title: string; poster: string; credit?: string }
+const { id, title, poster, credit } = Astro.props;
+---
+<figure class="video">
+  <div class="video__frame" data-video={id} data-title={title}>
+    <a class="video__poster" href={`https://www.youtube.com/watch?v=${id}`} target="_blank" rel="noopener noreferrer" aria-label={`Putar video: ${title}`}>
+      <img src={poster} alt="" width="640" height="360" loading="lazy" decoding="async" />
+      <span class="video__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg></span>
+      <span class="video__label">Putar video</span>
+    </a>
+  </div>
+  <figcaption class="video__cap">{title}{credit && <> · <span>{credit}</span></>}</figcaption>
+</figure>

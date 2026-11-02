@@ -1,0 +1,31 @@
+---
+// Form kontak (markup). Logikanya ada di src/scripts/contact-form.ts.
+import Icon from './Icon.astro';
+import { PURPOSES } from '../../lib/home-defaults';
+---
+<form class="form" id="contact-form" novalidate>
+  <div class="field">
+    <label for="f-name">Nama</label>
+    <input class="input" id="f-name" name="name" data-v autocomplete="name" required minlength="2" maxlength="120" aria-describedby="err-name" />
+    <p class="field__err" id="err-name" aria-live="polite"></p>
+  </div>
+  <div class="field">
+    <label for="f-email">Email</label>
+    <input class="input" id="f-email" name="email" type="email" data-v autocomplete="email" required maxlength="200" aria-describedby="err-email" />
+    <p class="field__err" id="err-email" aria-live="polite"></p>
+  </div>
+  <div class="field full">
+    <label for="f-purpose">Keperluan</label>
+    <select class="input" id="f-purpose" name="purpose">{PURPOSES.map((p) => <option value={p.value}>{p.label}</option>)}</select>
+  </div>
+  <div class="field full">
+    <label for="f-message">Pesan</label>
+    <textarea class="input" id="f-message" name="message" data-v rows="5" required minlength="10" maxlength="5000" aria-describedby="err-message"></textarea>
+    <p class="field__err" id="err-message" aria-live="polite"></p>
+  </div>
+  <div class="form__hp" aria-hidden="true"><label>Jangan diisi<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+  <div class="form__foot full">
+    <button class="btn btn--primary btn--lg" type="submit" id="form-submit">Kirim pesan<Icon name="arrow-ur" /></button>
+    <p class="form__msg" id="form-msg" role="status" aria-live="polite"></p>
+  </div>
+</form>

@@ -1,0 +1,21 @@
+---
+import type { Article } from '../../lib/data';
+import { formatDate } from '../../lib/data';
+import Cover from './Cover.astro';
+interface Props { article: Article; variant?: 'feature' | 'default'; headingLevel?: 'h2' | 'h3' }
+const { article, variant = 'default', headingLevel = 'h3' } = Astro.props;
+const H = headingLevel;
+---
+<article class:list={['acard', variant === 'feature' && 'acard--feature']}>
+  <Cover article={article} />
+  <div class="acard__body">
+    <div class="acard__meta">
+      {article.category && <span class="cat">{article.category.name}</span>}
+      <time datetime={article.published_at}>{formatDate(article.published_at)}</time>
+      {article.reading_minutes && <span>{article.reading_minutes} menit baca</span>}
+      {article.is_sample && <span class="sample-tag">Contoh konten</span>}
+    </div>
+    <H class="acard__title"><a href={`/artikel/${article.slug}`}>{article.title}</a></H>
+    {article.excerpt && <p class="acard__ex">{article.excerpt}</p>}
+  </div>
+</article>

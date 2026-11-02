@@ -1,0 +1,18 @@
+---
+import Icon from './Icon.astro';
+interface Props { instagram?: string; linkedin?: string; email?: string; wordmark?: string; copyright?: string }
+const { instagram, linkedin, email, wordmark = 'Transbara', copyright = 'Transbara Wahyu Firmansyah. Membangun dengan makna.' } = Astro.props;
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="container footer__in">
+    <a class="wordmark" href="/" aria-label={`${wordmark}, ke beranda`}>{wordmark}<span class="dot">.</span></a>
+    <p class="footer__copy">© {year} {copyright}</p>
+    <ul class="footer__social" aria-label="Media sosial">
+      {instagram && <li><a href={instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Icon name="instagram" /></a></li>}
+      {linkedin && <li><a href={linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Icon name="linkedin" /></a></li>}
+      {email && <li><a href={`mailto:${email}`} aria-label="Email"><Icon name="mail" /></a></li>}
+    </ul>
+    <a class="footer__top" href="#top" aria-label="Kembali ke atas"><Icon name="arrow-up" /></a>
+  </div>
+</footer>

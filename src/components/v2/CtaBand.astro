@@ -1,0 +1,13 @@
+---
+import Button from './Button.astro';
+import { fmtTitle } from '../../lib/format';
+interface Props { title: string; text?: string; label: string; href: string; external?: boolean }
+const { title, text, label, href, external = false } = Astro.props;
+---
+<section class="container">
+  <div class="cta-band reveal">
+    <h2 class="display display--lg" set:html={fmtTitle(title)}></h2>
+    {text && <p>{text}</p>}
+    <Button href={href} variant="primary" size="lg" icon="arrow-ur" magnetic target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>{label}</Button>
+  </div>
+</section>

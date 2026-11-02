@@ -16,7 +16,7 @@ export default function Projects() {
   if (edit) return <ProjectForm init={edit} onDone={() => { setEdit(null); reload(); }} />;
   return (
     <>
-      <PageHead title="Proyek" desc='Proyek "Unggulan" tampil di Beranda dan Tentang. Proyek berstatus eksplorasi tampil di seksi "Sedang Dieksplorasi".'
+      <PageHead title="Proyek" desc='Semua proyek yang dicentang "Tampilkan di situs" dan tidak berstatus Diarsipkan tampil di tab "Proyek Lainnya" pada Beranda (kartu: logo, nama, peran, deskripsi singkat, tombol Kunjungi). Proyek "Unggulan" tampil lebih dulu.'
         actions={<button class="btn btn-p" onClick={() => setEdit({ ...BLANK, sort_order: rows.length + 1 })}>+ Proyek baru</button>} />
       <Panel>
         {loading ? <Loading /> : error ? <ErrorState text={error} retry={reload} /> : rows.length === 0 ? <Empty title="Belum ada proyek" /> : (
@@ -97,18 +97,18 @@ function ProjectForm({ init, onDone }: { init: any; onDone: () => void }) {
               <TextField label="Nama proyek" value={p.name} onInput={(v) => setP((x: any) => ({ ...x, name: v, slug: x.id ? x.slug : slugify(v) }))} />
               <TextField label="Slug" value={p.slug} onInput={(v) => set('slug', v)} />
             </div>
-            <TextField label="Ringkasan satu kalimat" value={p.summary} onInput={(v) => set('summary', v)} />
+            <TextField label="Deskripsi singkat (tampil di kartu Beranda)" value={p.summary} onInput={(v) => set('summary', v)} />
             <TextField label="Deskripsi" value={p.description} onInput={(v) => set('description', v)} multiline rows={5} />
-            <TextField label="Peran Anda" value={p.role} onInput={(v) => set('role', v)} placeholder="Mis. Founder" />
+            <TextField label="Peran Anda" value={p.role} onInput={(v) => set('role', v)} placeholder="Mis. Founder" help="Tampil sebagai label di kartu Beranda." />
             <StringsField label="Peran dan kontribusi" value={p.contributions} onChange={(v) => set('contributions', v)} help="Tampil sebagai daftar di halaman Proyek." />
-            <TextField label="Tautan proyek" value={p.url} onInput={(v) => set('url', v)} type="url" placeholder="https://" help="Kosongkan bila belum ada." />
+            <TextField label="Tautan proyek" value={p.url} onInput={(v) => set('url', v)} type="url" placeholder="https://" help="Tujuan tombol Kunjungi di kartu Beranda. Kosongkan bila belum ada (tombol tidak tampil)." />
           </div>
         </Panel>
         <div>
           <Panel title="Tampilan">
             <div class="panel-b">
               <SelectField label="Status" value={p.status} onChange={(v) => set('status', v)} options={STATUS} />
-              <Check label="Unggulan (tampil di Beranda)" checked={p.is_featured} onChange={(v) => set('is_featured', v)} />
+              <Check label="Unggulan (tampil lebih dulu di Beranda)" checked={p.is_featured} onChange={(v) => set('is_featured', v)} />
               <Check label="Tampilkan di situs" checked={p.is_published} onChange={(v) => set('is_published', v)} />
               <TextField label="Nomor urut" type="number" value={String(p.sort_order)} onInput={(v) => set('sort_order', v)} />
             </div>

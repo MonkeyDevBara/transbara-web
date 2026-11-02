@@ -5,7 +5,7 @@ Situs personal branding (authority building) Transbara Wahyu Firmansyah. Brief l
 ## Stack
 
 - **Astro 5** (SSR dengan adapter Node, dijalankan di VPS lewat PM2 + Nginx)
-- **Argon Design System** (Bootstrap 4 SCSS) sebagai fondasi gaya, warna di-override sesuai brief, ada di `src/styles/argon/`
+- **SCSS** modular di `src/styles/v2/` (token, base, components, sections, pages). Tema gelap navy + hitam, font self-hosted (Anton, Manrope, Caveat), animasi mikro vanilla TS di `src/scripts/` (hormati `prefers-reduced-motion` + tombol Motion on/off)
 - **Supabase** project `Transbara Wahyu` (ref `odewmxiklbcmrpwqvwbj`, region Singapore, organisasi SIDIGS)
 
 ## Menjalankan lokal
@@ -22,10 +22,10 @@ Buka http://localhost:4321. Saat `dev`, data diambil langsung dari Supabase di s
 | Rute | Isi |
 | --- | --- |
 | `/` | Beranda |
-| `/tentang` | Cerita founder (placeholder "Isi cerita asli" untuk bagian yang perlu cerita nyata) |
+| `/tentang` | Profil Founder & CEO SIDIGS: cerita, timeline LinkedIn, nilai, topik bicara |
 | `/artikel` | Indeks artikel dengan filter kategori, pencarian, dan muat lebih banyak |
 | `/artikel/[slug]` | Detail artikel: daftar isi sticky, pull quote, figure, bagikan, artikel terkait, sebelumnya/berikutnya |
-| `/proyek` | SIDIGS + Sedang Dieksplorasi |
+| `/proyek` | Studi kasus SIDIGS, mitra/partner, penghargaan, galeri, proyek dari CMS |
 | `/kontak` | Form kontak → tabel `contact_messages` |
 | `/design-system` | Referensi komponen (noindex, tidak ada di navigasi) |
 
@@ -46,18 +46,18 @@ Hal yang bisa diatur langsung dari Supabase (Table Editor):
 
 ## Ringkasan keputusan desain
 
-- **Warna**: Putih #FFFFFF dominan, off-white #F6F8FB untuk seksi selang-seling, navy #16325C (heading, tombol, seksi gelap), biru tua #0D2140 (hover, footer), biru lembut #E8EFF8 (badge, area potret), charcoal #1F2733 (body), abu #6B7380 (meta).
-- **List emas #C5A46D**: hanya garis 1–2px. Dipakai di garis bawah header, garis atas footer, garis pendek di atas judul seksi, garis bawah menu aktif, border kiri pull quote, bingkai potret, garis atas artikel unggulan, dan sisi topik andalan. Teks emas hanya di atas navy.
-- **Tipografi**: DM Serif Display untuk heading, Inter untuk body/UI. Body 16px (artikel 18px, line-height 1.8). Kolom artikel maks. 720px.
-- **Spacing**: seksi `clamp(4rem, 8vw, 7.5rem)`, container 1200px, gutter 16px di mobile.
-- **Komponen**: kartu artikel dalam 4 varian (feature, row, compact, text) agar grid tidak seragam; sampul artikel tipografis dengan satu motif bintang delapan bergaris tipis sebagai ornamen Islami yang halus; tombol tanpa uppercase dan tanpa shadow (mengganti gaya bawaan Argon).
-- **Potret**: foto asli dipakai di panel #E8EFF8 dengan `mix-blend-mode: multiply`, jadi latar terangnya menyatu dengan biru lembut. Untuk hasil terbaik, hapus latar foto lalu ganti file `public/images/transbara-wahyu.jpg`.
+- **Warna** (token di `src/styles/v2/_tokens.scss`): latar `#05070B`, permukaan `#0A0F1A` / `#0F1626`, garis `#18223A`, navy `#0A1D4A` / `#123C8F`, aksen biru `#2F6BFF` (tombol `#2559E0`, teks kecil `#7FA6FF`), teks `#EEF2F8`, redup `#8A94A8`.
+- **Tipografi**: Anton untuk judul display, Manrope untuk body, Caveat untuk aksen tulisan tangan. Semua di `public/fonts/`, tanpa Google Fonts.
+- **Gerak**: reveal saat scroll, count-up statistik, marquee logo, parallax, tombol magnetik. Semua mati otomatis bila `prefers-reduced-motion`; pengunjung bisa mematikan lewat tombol Motion (disimpan di `localStorage`).
+- **Konten**: teks Beranda (`home_*`) dan halaman lain (`page_*`) disimpan di `site_settings`, default ada di `src/lib/home-defaults.ts` dan `src/lib/page-defaults.ts`, dan dapat diubah dari admin (Beranda / Halaman Lain / Global).
+- **SEO**: canonical, Open Graph + Twitter card, JSON-LD (Person, Organization, WebSite, BreadcrumbList, Article), `sitemap.xml` dinamis, `robots.txt`, favicon set. Gambar OG default `public/v2/img/og-default.jpg`.
+- **Referensi komponen**: `/design-system` (noindex). Dokumen perencanaan lengkap: `docs/PRD-redesign-2026.md`.
 
 ## Admin (`/admin`)
 
 Tidak ada tautan ke admin dari situs publik; buka langsung `http://localhost:4321/admin`. Halaman ini `noindex` dan diblokir di `robots.txt`.
 
-Modul: Ringkasan, Halaman Beranda (header sampai footer), Pengaturan Website (identitas, SEO, email, sosmed), Artikel (draft, terbit, jadwal, sampul, gambar inline, tag, artikel terkait, SEO + pratinjau Google), Kategori & Tag, Proyek, Topik Bicara, Pustaka Media, Pesan Masuk, Newsletter.
+Modul: Ringkasan, Halaman Beranda (header sampai footer), Halaman Lain (Proyek, Tentang, Artikel, Kontak, 404), Pengaturan Website (identitas, SEO, email, sosmed), Artikel (draft, terbit, jadwal, sampul, gambar inline, tag, artikel terkait, SEO + pratinjau Google), Kategori & Tag, Proyek, Topik Bicara, Pustaka Media, Pesan Masuk, Newsletter.
 
 **Akses admin** butuh dua hal:
 1. Akun di Supabase → Authentication → Users → *Add user* → *Create new user* (centang *Auto confirm*).

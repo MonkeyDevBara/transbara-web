@@ -211,6 +211,7 @@ export function SchemaFields({ fields, value, onChange }: { fields: Field[]; val
           case 'image': return <ImageField key={f.key} label={f.label} help={f.help} value={v ?? ''} onChange={(x) => set(f.key, x)} />;
           case 'strings': return <StringsField key={f.key} label={f.label} help={f.help} multiline={f.key === 'paragraphs'} value={v ?? []} onChange={(x) => set(f.key, x)} />;
           case 'list': return <ListField key={f.key} field={f} value={v ?? []} onChange={(x) => set(f.key, x)} />;
+          case 'select': return <SelectField key={f.key} label={f.label} help={f.help} value={v ?? f.options?.[0]?.value ?? ''} options={f.options ?? []} onChange={(x) => set(f.key, x)} />;
           default: return <TextField key={f.key} label={f.label} help={f.help} value={v ?? ''} onInput={(x) => set(f.key, x)} />;
         }
       })}
@@ -220,7 +221,7 @@ export function SchemaFields({ fields, value, onChange }: { fields: Field[]; val
 
 function ListField({ field, value, onChange }: { field: Field; value: Record<string, any>[]; onChange: (v: Record<string, any>[]) => void }) {
   const move = (i: number, d: number) => { const a = [...value]; const [x] = a.splice(i, 1); a.splice(i + d, 0, x); onChange(a); };
-  const blank = Object.fromEntries((field.itemFields ?? []).map((f) => [f.key, f.type === 'strings' ? [] : '']));
+  const blank = Object.fromEntries((field.itemFields ?? []).map((f) => [f.key, f.type === 'strings' ? [] : f.type === 'select' ? (f.options?.[0]?.value ?? '') : '']));
   return (
     <div class="fld">
       <span class="lbl">{field.label}</span>

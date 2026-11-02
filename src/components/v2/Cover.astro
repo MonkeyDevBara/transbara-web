@@ -1,0 +1,11 @@
+---
+import type { Article } from '../../lib/data';
+import Motif from './Motif.astro';
+interface Props { article: Article; eager?: boolean }
+const { article, eager = false } = Astro.props;
+const variant = ((article.category?.sort_order ?? 1) - 1) % 4; // variasi warna per kategori
+---
+<div class:list={['cover', `v${variant}`]}>
+  {article.cover_url ? <img src={article.cover_url} alt={article.cover_alt ?? ''} loading={eager ? 'eager' : 'lazy'} decoding="async" /> : <Motif />}
+  <span class="cover__cat">{article.category?.name ?? 'Catatan'}</span>
+</div>

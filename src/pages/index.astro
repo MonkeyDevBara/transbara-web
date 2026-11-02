@@ -1,187 +1,329 @@
 ---
-import Base from '../layouts/Base.astro';
-import Portrait from '../components/Portrait.astro';
-import ArticleCard from '../components/ArticleCard.astro';
-import SampleLabel from '../components/SampleLabel.astro';
-import ProjectFeature from '../components/ProjectFeature.astro';
-import CtaBand from '../components/CtaBand.astro';
-import StateBox from '../components/StateBox.astro';
-import Icon from '../components/Icon.astro';
-import { getArticles, getProjects, getTopics, safe } from '../lib/data';
+// Beranda v2: dark editorial, biru tua + hitam. Semua teks/gambar/daftar dibaca dari konten (site_settings key home_*, editable di /admin)
+// dengan nilai bawaan di src/lib/home-defaults.ts. Artikel dan Proyek Lainnya diambil dari tabelnya masing-masing.
+import BaseV2 from '../layouts/BaseV2.astro';
+import Button from '../components/v2/Button.astro';
+import Icon from '../components/v2/Icon.astro';
+import SectionHeader from '../components/v2/SectionHeader.astro';
+import WorkCard from '../components/v2/WorkCard.astro';
+import LogoMarquee from '../components/v2/LogoMarquee.astro';
+import Accordion from '../components/v2/Accordion.astro';
+import QuoteCard from '../components/v2/QuoteCard.astro';
+import Laurel from '../components/v2/Laurel.astro';
+import VideoFacade from '../components/v2/VideoFacade.astro';
+import ProjectCard from '../components/v2/ProjectCard.astro';
+import ContactForm from '../components/v2/ContactForm.astro';
 import { getContent } from '../lib/content';
+import { getArticles, getProjects, safe, formatDate } from '../lib/data';
+import { contactInfo, PROFILE } from '../lib/profile';
+import { fmtTitle, ytId } from '../lib/format';
+import { FILTERS, PREVIEW_PROJECTS, HOME_DEFAULTS } from '../lib/home-defaults';
 
-const [articles, projects, topics, c] = await Promise.all([
-  safe(getArticles, []),
-  safe(getProjects, []),
-  safe(getTopics, []),
-  getContent(),
-]);
-const featured = articles.data.find((a) => a.is_featured) ?? articles.data[0];
-const secondary = articles.data.filter((a) => a !== featured).slice(0, 2);
-const mainProject = projects.data.find((p) => p.is_featured);
+const content = await getContent();
+const info = contactInfo(content);
+const { home_hero: hero, home_work: work, home_awards: awards, home_story: story, home_about: about, home_journey: journey, home_articles: art, home_contact: contact } = content;
 
-const quoteAfter = Math.max(0, Number(c.journey.quote_after) || 0);
+// Seksi artikel hanya tampil bila sudah ada artikel asli (bukan contoh).
+const { data: allArticles } = await safe(() => getArticles(), []);
+const articles = allArticles.filter((a) => !a.is_sample && a.status === 'published').slice(0, 3);
+
+// Proyek Lainnya: CMS > Proyek (hanya yang tampil di situs dan tidak diarsipkan; unggulan lebih dulu).
+const { data: projectRows, error: projectError } = await safe(() => getProjects(), []);
+const devPreview = import.meta.env.DEV && projectError; // database lokal mati: data contoh agar tata letak bisa ditinjau
+const projects = (devPreview ? PREVIEW_PROJECTS : projectRows.filter((p) => p.status !== 'archived')).slice().sort((a, b) => Number(!!b.is_featured) - Number(!!a.is_featured));
+const filters = FILTERS.filter((f) => f.key !== 'project' || projects.length > 0);
+
+const isDefaultPortrait = hero.portrait === HOME_DEFAULTS.home_hero.portrait;
+const videoId = ytId(story.video);
+const poster = story.poster || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '');
+const logos = (list: { image: string; alt: string }[], w: number, h: number) => list.filter((l) => l.image).map((l) => ({ src: l.image, alt: l.alt || 'Logo', w, h }));
+const mitra = logos(work.mitra, 160, 160);
+const partners = logos(work.partners, 320, 162);
+// Item daftar yang belum diisi (mis. baru ditambah di admin) tidak ditampilkan.
+const has = <T,>(list: T[] | undefined, key: keyof T) => (list ?? []).filter((x) => String((x as any)?.[key] ?? '').trim());
+const words = (list: string[] | undefined) => (list ?? []).filter((x) => String(x ?? '').trim());
+const downloadable = (u: string) => /\.pdf(\?|$)/i.test(u);
 ---
-<Base>
-  <!-- Hero -->
-  <section class="hero">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-7 pr-lg-5">
-          {c.hero.credibility && <p class="hero-credibility">{c.hero.credibility}</p>}
-          <h1 class="hero-title">
-            {c.hero.headline.map((line) => <span>{line}</span>)}
-          </h1>
-          <p class="hero-sub">{c.hero.subtext}</p>
-          <div class="hero-ctas">
-            {c.hero.cta_primary_label && <a href={c.hero.cta_primary_href} class="btn btn-primary">{c.hero.cta_primary_label}</a>}
-            {c.hero.cta_secondary_label && <a href={c.hero.cta_secondary_href} class="btn btn-secondary">{c.hero.cta_secondary_label}</a>}
-          </div>
-        </div>
-        <div class="col-lg-5">
-          <Portrait eager />
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Sedikit Tentang Saya -->
-  <section class="section bg-offwhite">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-4 mb-4 mb-lg-0">
-          <span class="gold-rule"></span>
-          <h2 class="section-title">{c.about.title}</h2>
-        </div>
-        <div class="col-lg-8">
-          <p class="lead-serif mb-4">{c.about.intro}</p>
-          {c.about.body && <p style="color:#3A4452; font-size:1.0625rem; max-width: 40rem;">{c.about.body}</p>}
-          {c.about.link_label && <a href={c.about.link_href} class="text-link mt-2">{c.about.link_label} <Icon name="arrow" size={16} /></a>}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Area fokus -->
-  <section class="section">
-    <div class="container">
-      <div class="row mb-5">
-        <div class="col-lg-7">
-          <span class="gold-rule"></span>
-          <h2 class="section-title">{c.focus.title}</h2>
-          {c.focus.intro && <p class="section-intro">{c.focus.intro}</p>}
-        </div>
-      </div>
-      <ol class="focus-list">
-        {c.focus.items.map((f, i) => (
-          <li class="focus-item">
-            <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{f.title}</h3>
-            <p>{f.text}</p>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </section>
-
-  <!-- Topik bicara -->
-  <section class="section bg-navy on-dark" id="topik">
-    <div class="container">
-      <div class="row align-items-end mb-5">
-        <div class="col-lg-7">
-          <span class="gold-rule"></span>
-          {c.topics.eyebrow && <span class="eyebrow">{c.topics.eyebrow}</span>}
-          <h2 class="section-title">{c.topics.title}</h2>
-        </div>
-        <div class="col-lg-5 text-lg-right mt-3 mt-lg-0">
-          {c.topics.cta_label && <a href={c.topics.cta_href} class="btn btn-light-tw">{c.topics.cta_label}</a>}
-        </div>
-      </div>
-      {topics.error ? <StateBox type="error" /> : (
-        <>
-          {topics.data.filter((t) => t.is_signature).map((t) => (
-            <div class="topic topic-signature">
-              <span class="t-num">{String(topics.data.indexOf(t) + 1).padStart(2, '0')}</span>
-              <div>
-                <span class="t-label">{c.topics.signature_label}</span>
-                <h3>{t.title}</h3>
-                {t.description && <p>{t.description}</p>}
-              </div>
-            </div>
-          ))}
-          <div class="topics-grid">
-            {topics.data.filter((t) => !t.is_signature).map((t) => (
-              <div class="topic">
-                <span class="t-num">{String(topics.data.indexOf(t) + 1).padStart(2, '0')}</span>
-                <div>
-                  <h3>{t.title}</h3>
-                  {t.description && <p>{t.description}</p>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  </section>
-
-  <!-- Artikel -->
-  <section class="section">
-    <div class="container">
-      <div class="d-flex flex-wrap justify-content-between align-items-end mb-5" style="gap:1rem">
+<BaseV2 home>
+  <!-- ===== S1 HERO ===== -->
+  <section class="hero" aria-label="Perkenalan">
+    <div class="container hero__in">
+      <div class="hero__eyes">
         <div>
-          <span class="gold-rule"></span>
-          <h2 class="section-title mb-2">{c.articles.title}</h2>
-          {articles.data.some((a) => a.is_sample) && <SampleLabel />}
+          <p class="eyebrow eyebrow--accent">{hero.eyebrow1}</p>
+          <p class="eyebrow" style="color:var(--text);font-weight:700">{hero.eyebrow2}</p>
         </div>
-        <a href="/artikel" class="text-link">{c.articles.link_label} <Icon name="arrow" size={16} /></a>
+        <p class="eyebrow hero__avail"><span class="live-dot"></span>{hero.availability}</p>
       </div>
-      {articles.error && <StateBox type="error" />}
-      {!articles.error && !featured && <StateBox type="empty" title="Belum ada artikel" text="Tulisan pertama sedang disiapkan." />}
-      {featured && (
-        <div class="row">
-          <div class="col-lg-7 mb-5 mb-lg-0">
-            <ArticleCard article={featured} variant="feature" />
-          </div>
-          <div class="col-lg-5 pl-lg-5">
-            <div class="d-flex flex-column" style="gap:2.5rem">
-              {secondary.map((a) => <ArticleCard article={a} variant="row" />)}
+
+      <div class="hero__stage">
+        <div class="hero__wordmask" aria-hidden="true"><span class="hero__word">{hero.big_word}</span></div>
+        <div class="hero__glow" aria-hidden="true"></div>
+        <div class="hero__pw" data-parallax="24">
+          {isDefaultPortrait ? (
+            <img class="hero__portrait" src="/v2/img/portrait-881.webp"
+              srcset="/v2/img/portrait-480.webp 480w, /v2/img/portrait-768.webp 768w, /v2/img/portrait-881.webp 881w"
+              sizes="(min-width: 960px) 560px, 80vw" width="881" height="1403" alt={hero.portrait_alt} fetchpriority="high" decoding="async" />
+          ) : (
+            <img class="hero__portrait" src={hero.portrait} width="881" height="1403" alt={hero.portrait_alt} fetchpriority="high" decoding="async" />
+          )}
+        </div>
+      </div>
+
+      <div class="hero__copy">
+        <p class="hand hero__hello">{hero.greeting}</p>
+        <h1 class="hero__name" aria-label={hero.name}>
+          <span aria-hidden="true">{[...hero.name.toUpperCase()].map((c, i) => <span class="ch" style={`--i:${i}`}>{c}</span>)}<span class="dot">.</span></span>
+        </h1>
+        <p class="hero__role">{hero.role}</p>
+        <p class="hero__tag">{hero.tagline}</p>
+        <div class="hero__cta"><Button href="#karya" icon="arrow-down">{hero.cta_label}</Button></div>
+        <p class="hero__loc"><Icon name="pin" />{hero.location}</p>
+      </div>
+
+      <aside class="hero__side" aria-label="Sekilas angka">
+        <div class="hero__badge reveal">
+          <span class="badge-spin" aria-hidden="true"><Icon name="asterisk" /></span>
+          <p>{hero.badge1}<br />{hero.badge2}</p>
+        </div>
+        <div class="stats hero__stats" data-stagger>
+          {has(hero.stats, 'label').map((s) => {
+            const n = Number(s.value) || 0;
+            return (
+              <div class="stat reveal">
+                <span class="stat__num"><span data-count={n}>{n}</span>{s.suffix && <sup>{s.suffix}</sup>}</span>
+                <span class="stat__label">{s.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        {hero.cv_url && <a class="hero__cv reveal" href={hero.cv_url} download={downloadable(hero.cv_url) ? '' : undefined}><Icon name="download" />Download CV</a>}
+      </aside>
+
+      <div class="hero__bar">
+        {hero.profile_url ? <a class="hero__play" href={hero.profile_url} target="_blank" rel="noopener"><i aria-hidden="true"><Icon name="play" /></i>Company Profile SIDIGS</a> : <span></span>}
+        <a class="hero__scroll" href="#karya">Scroll to discover<Icon name="arrow-down" /></a>
+        <span>{hero.bar_right}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== S2 KARYA ===== -->
+  <section class="section" id="karya" aria-labelledby="h-karya">
+    <div class="container">
+      <SectionHeader label={work.label} linkLabel={work.link_label} linkHref={work.link_href} id="h-karya"><Fragment set:html={fmtTitle(work.title)} /></SectionHeader>
+
+      <div class="filters reveal" role="group" aria-label="Filter karya">
+        {filters.map((f) => <button class="filter" type="button" data-filter={f.key} aria-pressed={f.key === 'all' ? 'true' : 'false'}>{f.label}</button>)}
+      </div>
+
+      <div id="work-area">
+        <div class="work-grid">
+          {has(work.products, 'name').map((p, i) => <WorkCard name={p.name} tag={p.tag} cats={p.cats || 'mobile'} text={p.text} image={p.image} link={p.link} index={i} />)}
+        </div>
+        {has(work.addons, 'image').length > 0 && (
+          <div class="addons reveal" data-cat="addon">
+            <div class="addons__head">
+              <h3 class="display display--md"><Fragment set:html={fmtTitle(work.addons_title)} /></h3>
+              <p class="eyebrow">{has(work.addons, 'image').length} modul untuk kebutuhan sekolah</p>
             </div>
+            <ul class="addons__grid" data-stagger>
+              {work.addons.filter((a) => a.image).map((a) => <li class="addon reveal"><img src={a.image} alt={a.name} width="300" height="297" loading="lazy" decoding="async" /></li>)}
+            </ul>
           </div>
+        )}
+        {projects.length > 0 && (
+          <div class="projects" data-cat="project">
+            <div class="addons__head">
+              <h3 class="display display--md"><Fragment set:html={fmtTitle(work.projects_title)} /></h3>
+              <p class="eyebrow">{projects.length} proyek</p>
+            </div>
+            <div class="proj-grid" data-stagger>
+              {projects.map((p) => <ProjectCard name={p.name} role={p.role} summary={p.summary} logo={p.logo_url} url={p.url} />)}
+            </div>
+            {devPreview && <p class="dev-note">Pratinjau lokal: ini data contoh karena database belum terhubung. Di situs asli, daftar ini diambil dari CMS &gt; Proyek.</p>}
+          </div>
+        )}
+      </div>
+
+      {(mitra.length > 0 || partners.length > 0) && (
+        <div class="trust">
+          <div class="trust__head">
+            <div>
+              <p class="eyebrow reveal">{work.trust_label}</p>
+              <h3 class="display display--md reveal"><Fragment set:html={fmtTitle(work.trust_title)} /></h3>
+            </div>
+            <button class="trust__btn reveal" type="button" data-open-logos>Lihat semua mitra ({mitra.length + partners.length})<Icon name="plus" /></button>
+          </div>
+          {mitra.length > 0 && <LogoMarquee items={mitra} label="Logo sekolah mitra SIDIGS" />}
+          {partners.length > 0 && <LogoMarquee items={partners} label="Logo partner SIDIGS" reverse wide />}
         </div>
       )}
     </div>
   </section>
 
-  <!-- Perjalanan -->
-  <section class="section bg-offwhite">
+  <dialog class="logos-dlg" id="logos-dialog" aria-label="Semua mitra dan partner">
+    <div class="logos-dlg__head"><h2 class="display display--md" style="font-size:28px">Mitra &amp; partner<span class="dot">.</span></h2><button class="icon-close btn btn--ghost" type="button" data-close aria-label="Tutup"><Icon name="close" /></button></div>
+    <div class="logos-dlg__body">
+      {mitra.length > 0 && <div><p class="eyebrow" style="margin-bottom:12px">Sekolah mitra ({mitra.length})</p><div class="logos-dlg__grid">{mitra.map((l) => <img src={l.src} alt={l.alt} width={l.w} height={l.h} loading="lazy" decoding="async" />)}</div></div>}
+      {partners.length > 0 && <div><p class="eyebrow" style="margin-bottom:12px">Partner ({partners.length})</p><div class="logos-dlg__grid logos-dlg__grid--wide">{partners.map((l) => <img src={l.src} alt={l.alt} width={l.w} height={l.h} loading="lazy" decoding="async" />)}</div></div>}
+    </div>
+  </dialog>
+
+  <!-- ===== S3 PENCAPAIAN ===== -->
+  <section class="section" id="pencapaian" aria-labelledby="h-pencapaian">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4 mb-4">
-          <span class="gold-rule"></span>
-          <h2 class="section-title">{c.journey.title}</h2>
+      <div class="awards">
+        <div>
+          <p class="eyebrow reveal">{awards.label}</p>
+          <h2 class="display display--lg reveal" id="h-pencapaian" style="margin-top:16px" set:html={fmtTitle(awards.title)}></h2>
+          <div class="laurel-wrap reveal"><Laurel /><span class="laurel__n"><span data-count={Number(awards.counter) || 0}>{Number(awards.counter) || 0}</span></span><Laurel side="r" /></div>
+          <p class="eyebrow eyebrow--accent reveal">{awards.counter_label}</p>
+          <p class="awards__text reveal">{awards.text}</p>
+          {awards.link_href && <div class="reveal" style="margin-top:24px"><Button href={awards.link_href} variant="link" icon="arrow-ur" target="_blank" rel="noopener noreferrer">{awards.link_label}</Button></div>}
         </div>
-        <div class="col-lg-7 offset-lg-1">
-          {c.journey.paragraphs.map((p, i) => (
-            <>
-              {c.journey.quote && i === quoteAfter && <blockquote class="pull-quote">{c.journey.quote}</blockquote>}
-              <p style="font-size:1.125rem; color:#3A4452">{p}</p>
-            </>
+        <ol class="awards__list" data-stagger aria-label="Daftar penghargaan">
+          {has(awards.items, 'title').map((a, i) => (
+            <li class="award reveal">
+              <span class="award__n">{String(i + 1).padStart(2, '0')}</span>
+              <span><span class="award__t">{a.title}</span><span class="award__o">{a.org}</span></span>
+              <span class="award__r">{a.rank}{a.year && <small>{a.year}</small>}</span>
+            </li>
           ))}
-          {c.journey.quote && quoteAfter >= c.journey.paragraphs.length && <blockquote class="pull-quote">{c.journey.quote}</blockquote>}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOUNDER STORY (video) ===== -->
+  <section class="section" id="founder-story" aria-labelledby="h-story">
+    <div class="container">
+      <SectionHeader label={story.eyebrow} id="h-story"><Fragment set:html={fmtTitle(story.title)} /></SectionHeader>
+      <div class:list={['story', !videoId && 'story--solo']}>
+        {videoId && <div class="story__media reveal"><VideoFacade id={videoId} title={story.video_title} poster={poster} credit={story.video_credit} /></div>}
+        <div class="story__copy">
+          <p class="lead reveal">{story.body}</p>
+          {words(story.values).length > 0 && (
+            <div class="values reveal">
+              <p class="eyebrow">{story.values_label}</p>
+              <ul class="values__list" data-stagger>
+                {words(story.values).map((v, i) => <li class="reveal"><span>{String(i + 1).padStart(2, '0')}</span>{v}</li>)}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Proyek -->
-  <section class="section">
+  <!-- ===== S5 TENTANG ===== -->
+  <section class="section" id="tentang" aria-labelledby="h-tentang">
     <div class="container">
-      <span class="gold-rule"></span>
-      <h2 class="section-title mb-5">{c.projects.title}</h2>
-      {mainProject ? <ProjectFeature project={mainProject} /> : <StateBox type={projects.error ? 'error' : 'empty'} title={projects.error ? undefined : 'Belum ada proyek'} />}
+      <div class="about-top">
+        <p class="eyebrow reveal">{about.label}</p>
+        <h2 class="display display--lg reveal" id="h-tentang" style="margin-top:16px" set:html={fmtTitle(about.title)}></h2>
+      </div>
+
+      <div class="about-cols">
+        <div class="reveal">
+          <h3 class="col-title">{about.education_title}</h3>
+          <ul class="edu">
+            {has(about.education, 'school').map((e) => <li><em>{e.years}</em><b>{e.school}</b><span>{e.program}</span></li>)}
+          </ul>
+          {words(about.skills).length > 0 && <><p class="eyebrow sub-label">Keahlian</p><div class="chips">{words(about.skills).map((s) => <span class="chip">{s}</span>)}</div></>}
+          {words(about.languages).length > 0 && <><p class="eyebrow sub-label">Bahasa</p><div class="chips">{words(about.languages).map((s) => <span class="chip" lang={/[؀-ۿ]/.test(s) ? 'ar' : undefined}>{s}</span>)}</div></>}
+          {words(about.certifications).length > 0 && <><p class="eyebrow sub-label">Sertifikasi</p><div class="chips">{words(about.certifications).map((s) => <span class="chip chip--accent">{s}</span>)}</div></>}
+        </div>
+        <div class="reveal">
+          <h3 class="col-title">{about.steps_title}</h3>
+          <ol class="steps-v">
+            {has(about.steps, 'title').map((s, i) => <li class="step"><span class="step__n">{String(i + 1).padStart(2, '0')}</span><div><b>{s.title}</b><p>{s.text}</p></div></li>)}
+          </ol>
+        </div>
+        <QuoteCard sign={about.signature} foot={about.quote_foot}>{about.quote}</QuoteCard>
+      </div>
     </div>
   </section>
 
-  <CtaBand />
-</Base>
+  <!-- ===== S6 PERJALANAN ===== -->
+  <section class="section" id="perjalanan" aria-labelledby="h-perjalanan">
+    <div class="container">
+      <SectionHeader label={journey.label} linkLabel={hero.cv_url ? journey.link_label : undefined} linkHref={hero.cv_url || undefined} id="h-perjalanan"><Fragment set:html={fmtTitle(journey.title)} /></SectionHeader>
+      <div class="journey">
+        <Accordion items={has(journey.items, 'role').map((j) => ({ period: j.period, role: j.role, org: j.org, text: j.text }))} label="Riwayat perjalanan" />
+        {has(journey.milestones, 'title').length > 0 && (
+          <aside class="milestones" aria-label={journey.milestones_label}>
+            <p class="eyebrow eyebrow--accent reveal">{journey.milestones_label}</p>
+            <h3 class="display display--md reveal" set:html={fmtTitle(journey.milestones_title)}></h3>
+            <ol data-stagger>
+              {has(journey.milestones, 'title').map((m, i) => <li class="mile reveal"><span class="mile__n">{String(i + 1).padStart(2, '0')}</span><div><b>{m.title}</b><span>{m.who}</span></div></li>)}
+            </ol>
+          </aside>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== S7 ARTIKEL (hanya bila ada artikel asli) ===== -->
+  {articles.length > 0 && (
+    <section class="section" id="artikel" aria-labelledby="h-artikel">
+      <div class="container">
+        <SectionHeader label={art.label} linkLabel={art.link_label} linkHref="/artikel" id="h-artikel"><Fragment set:html={fmtTitle(art.title)} /></SectionHeader>
+        <div class="art-grid" data-stagger>
+          {articles.map((a) => (
+            <a class="art reveal" href={`/artikel/${a.slug}`}>
+              <p class="eyebrow eyebrow--accent">{a.category?.name ?? 'Artikel'} · {formatDate(a.published_at)}</p>
+              <h3 class="display display--md">{a.title}</h3>
+              {a.excerpt && <p>{a.excerpt}</p>}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- ===== S8 KONTAK ===== -->
+  <section class="section" id="kontak" aria-labelledby="h-kontak">
+    <div class="container">
+      <div class="contact">
+        <div>
+          <p class="eyebrow reveal">{contact.label}</p>
+          <h2 class="display display--lg reveal" id="h-kontak" style="margin-top:16px" set:html={fmtTitle(contact.title)}></h2>
+          <p class="contact__lead reveal">{contact.text}</p>
+          <div class="contact__cta reveal"><Button href="#form-item" variant="primary" size="lg" icon="arrow-ur" magnetic data-open-form>{contact.button_label}</Button></div>
+        </div>
+        <div data-stagger>
+          <a class="contact-row reveal" href={`mailto:${info.email}`}><span class="contact-row__ic"><Icon name="mail" /></span><span><span class="contact-row__label">Email</span><span class="contact-row__val">{info.email}</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+          <a class="contact-row reveal" href={info.instagram} target="_blank" rel="noopener noreferrer"><span class="contact-row__ic"><Icon name="instagram" /></span><span><span class="contact-row__label">Instagram</span><span class="contact-row__val">{PROFILE.instagramHandle}</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+          <a class="contact-row reveal" href={info.linkedin} target="_blank" rel="noopener noreferrer"><span class="contact-row__ic"><Icon name="linkedin" /></span><span><span class="contact-row__label">LinkedIn</span><span class="contact-row__val">{PROFILE.linkedinHandle}</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+          <div class="contact-row reveal"><span class="contact-row__ic"><Icon name="pin" /></span><span><span class="contact-row__label">Based in</span><span class="contact-row__val">{hero.location}</span></span><span></span></div>
+        </div>
+        <div class="sidigs-card reveal">
+          <h3>{contact.card_title}<span class="dot">.</span></h3>
+          <p>{contact.card_subtitle}</p>
+          {contact.card_url && <Button href={contact.card_url} variant="ghost" icon="arrow-ur" target="_blank" rel="noopener noreferrer">{contact.card_button}</Button>}
+        </div>
+      </div>
+
+      <div class="acc form-acc" data-acc>
+        <div class="acc__item reveal" id="form-item">
+          <h3>
+            <button class="acc__btn" type="button" aria-expanded="false" aria-controls="form-panel" id="form-btn">
+              <span class="acc__row"><span class="acc__role">{contact.form_title}</span></span>
+              <span class="acc__ic" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="acc__panel" id="form-panel" role="region" aria-labelledby="form-btn" inert>
+            <div>
+              <ContactForm />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/home.ts';
+  </script>
+</BaseV2>

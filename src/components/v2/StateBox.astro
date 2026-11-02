@@ -1,0 +1,8 @@
+---
+interface Props { type?: 'error' | 'empty'; title?: string; text?: string }
+const { type = 'empty', title, text } = Astro.props;
+const d = type === 'error'
+  ? { t: 'Konten belum bisa dimuat', p: 'Terjadi kendala saat mengambil data. Silakan muat ulang halaman beberapa saat lagi.' }
+  : { t: 'Belum ada konten', p: 'Konten akan ditampilkan di sini.' };
+---
+<div class="state" role={type === 'error' ? 'alert' : 'status'}><h3>{title ?? d.t}</h3><p>{text ?? d.p}</p></div>

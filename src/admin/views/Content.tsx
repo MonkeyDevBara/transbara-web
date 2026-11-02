@@ -4,7 +4,7 @@ import { sb, errMsg } from '../sb';
 import { PageHead, SchemaFields, SaveBtn, Loading, ErrorState, useLoad, useToast, useUnsavedGuard, q } from '../ui';
 
 /** Form konten berbasis skema. group 'beranda' = seksi landing page, 'global' = pengaturan website. */
-export default function ContentView({ group }: { group: 'beranda' | 'global' }) {
+export default function ContentView({ group }: { group: 'beranda' | 'halaman' | 'global' }) {
   const sections = SECTIONS.filter((s) => s.group === group);
   const { data, loading, error, reload } = useLoad(() => q(sb.from('site_settings').select('key, value')), [group]);
   const stored = Object.fromEntries(((data as any[]) ?? []).map((r) => [r.key, r.value]));
@@ -12,10 +12,12 @@ export default function ContentView({ group }: { group: 'beranda' | 'global' }) 
   return (
     <>
       <PageHead
-        title={group === 'beranda' ? 'Halaman Beranda' : 'Pengaturan Website'}
+        title={group === 'beranda' ? 'Halaman Beranda' : group === 'halaman' ? 'Halaman Lain' : 'Pengaturan Website'}
         desc={group === 'beranda'
           ? 'Semua teks dan gambar di landing page, dari header sampai footer, berurutan sesuai tampilannya.'
-          : 'Identitas situs, SEO bawaan, email kontak, dan tautan sosial media.'}
+          : group === 'halaman'
+            ? 'Teks halaman Proyek, Tentang, Artikel, Kontak, dan 404.'
+            : 'Identitas situs, SEO bawaan, email kontak, dan tautan sosial media.'}
         actions={<a class="btn btn-s" href="/" target="_blank" rel="noopener">Lihat situs ↗</a>}
       />
       {loading ? <div class="panel"><Loading rows={6} /></div>

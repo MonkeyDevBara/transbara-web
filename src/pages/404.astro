@@ -1,16 +1,18 @@
 ---
-import Base from '../layouts/Base.astro';
+import BaseV2 from '../layouts/BaseV2.astro';
+import Button from '../components/v2/Button.astro';
+import { getContent } from '../lib/content';
+import { fmtTitle } from '../lib/format';
+const { page_404: p } = await getContent();
 ---
-<Base title="Halaman tidak ditemukan" noindex>
-  <section class="section">
-    <div class="container text-center" style="max-width: 40rem;">
-      <span class="gold-rule center"></span>
-      <h1 class="section-title">Halaman ini tidak ditemukan.</h1>
-      <p class="section-intro mx-auto mb-4">Mungkin tautannya sudah berubah. Silakan kembali ke beranda atau jelajahi tulisan terbaru.</p>
-      <div class="hero-ctas justify-content-center">
-        <a href="/" class="btn btn-primary">Ke Beranda</a>
-        <a href="/artikel" class="btn btn-secondary">Baca Artikel</a>
-      </div>
+<BaseV2 title="Halaman tidak ditemukan" noindex>
+  <section class="container notfound">
+    <p class="notfound__code" aria-hidden="true">404</p>
+    <h1 class="display display--lg" set:html={fmtTitle(p.title)}></h1>
+    <p class="lead">{p.text}</p>
+    <div class="hero__cta">
+      <Button href="/" icon="arrow-right">Ke beranda</Button>
+      <Button href="/artikel" variant="ghost">Baca artikel</Button>
     </div>
   </section>
-</Base>
+</BaseV2>

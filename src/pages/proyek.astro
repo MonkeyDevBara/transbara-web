@@ -1,53 +1,137 @@
 ---
-import Base from '../layouts/Base.astro';
-import ProjectFeature from '../components/ProjectFeature.astro';
-import StateBox from '../components/StateBox.astro';
-import CtaBand from '../components/CtaBand.astro';
+import BaseV2 from '../layouts/BaseV2.astro';
+import PageHead from '../components/v2/PageHead.astro';
+import SectionHeader from '../components/v2/SectionHeader.astro';
+import WorkCard from '../components/v2/WorkCard.astro';
+import ProjectCard from '../components/v2/ProjectCard.astro';
+import CtaBand from '../components/v2/CtaBand.astro';
+import Icon from '../components/v2/Icon.astro';
+import { getContent } from '../lib/content';
 import { getProjects, safe } from '../lib/data';
+import { fmtTitle } from '../lib/format';
+import { PREVIEW_PROJECTS } from '../lib/home-defaults';
 
-const projects = await safe(getProjects, []);
-const featured = projects.data.filter((p) => p.status === 'active');
-const exploring = projects.data.filter((p) => p.status === 'exploring');
+const content = await getContent();
+const { page_proyek: p, home_work: work, home_awards: awards, home_journey: journey, home_hero: hero } = content;
+const has = <T,>(list: T[] | undefined, key: keyof T) => (list ?? []).filter((x) => String((x as any)?.[key] ?? '').trim());
+
+const { data: rows, error } = await safe(getProjects, []);
+const devPreview = import.meta.env.DEV && error;
+const projects = (devPreview ? PREVIEW_PROJECTS : rows.filter((r) => r.status !== 'archived')).slice().sort((a, b) => Number(!!b.is_featured) - Number(!!a.is_featured));
+
+const mitra = has(work.mitra, 'image');
+const partners = has(work.partners, 'image');
+const gallery = has(p.gallery, 'image');
+const crumbs = [{ name: 'Beranda', href: '/' }, { name: 'Proyek' }];
 ---
-<Base title="Proyek" description="Proyek dan eksplorasi Transbara Wahyu, dengan SIDIGS sebagai proyek utama.">
-  <section class="page-head">
+<BaseV2 title="Proyek: SIDIGS" description={p.intro} crumbs={crumbs}>
+  <PageHead crumbs={crumbs} label={p.label} title={p.title} intro={p.intro}>
+    {p.intro_2 && <p class="lead reveal" style="margin-top:16px">{p.intro_2}</p>}
+    <div class="facts stats" data-stagger>
+      {has(hero.stats, 'label').map((s) => {
+        const n = Number(s.value) || 0;
+        return <div class="stat reveal"><span class="stat__num"><span data-count={n}>{n}</span>{s.suffix && <sup>{s.suffix}</sup>}</span><span class="stat__label">{s.label}</span></div>;
+      })}
+    </div>
+  </PageHead>
+
+  <section class="section" id="ekosistem" aria-labelledby="h-eko">
     <div class="container">
-      <nav aria-label="Breadcrumb"><ol class="tw-breadcrumb"><li><a href="/">Beranda</a></li><li aria-current="page">Proyek</li></ol></nav>
-      <span class="gold-rule"></span>
-      <h1>Hal yang Sedang Saya Bangun</h1>
-      <p class="section-intro">Proyek-proyek ini adalah cara saya menerjemahkan gagasan menjadi kerja nyata. Fokusnya pada dampak dan proses, bukan sekadar hasil.</p>
+      <SectionHeader label="01 / Ekosistem" id="h-eko"><Fragment set:html={fmtTitle(p.ecosystem_title)} /></SectionHeader>
+      {p.ecosystem_text && <p class="eco-intro reveal">{p.ecosystem_text}</p>}
+      <div class="work-grid">
+        {has(work.products, 'name').map((pr, i) => <WorkCard name={pr.name} tag={pr.tag} cats={pr.cats || 'mobile'} text={pr.text} image={pr.image} index={i} />)}
+      </div>
+      {has(work.addons, 'image').length > 0 && (
+        <div class="addons reveal">
+          <div class="addons__head">
+            <h3 class="display display--md"><Fragment set:html={fmtTitle(work.addons_title)} /></h3>
+            <p class="eyebrow">{has(work.addons, 'image').length} modul untuk kebutuhan sekolah</p>
+          </div>
+          <ul class="addons__grid" data-stagger>
+            {has(work.addons, 'image').map((a) => <li class="addon reveal"><img src={a.image} alt={a.name} width="300" height="297" loading="lazy" decoding="async" /></li>)}
+          </ul>
+        </div>
+      )}
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      {projects.error && <StateBox type="error" />}
-      {!projects.error && featured.length === 0 && <StateBox type="empty" title="Belum ada proyek" text="Proyek akan ditampilkan di sini." />}
-      {featured.map((p) => <ProjectFeature project={p} detailed />)}
-    </div>
-  </section>
-
-  {exploring.length > 0 && (
-    <section class="section bg-offwhite">
+  {has(p.values, 'title').length > 0 && (
+    <section class="section" id="nilai" aria-labelledby="h-nilai">
       <div class="container">
-        <span class="gold-rule"></span>
-        <h2 class="section-title">Sedang Dieksplorasi</h2>
-        <p class="section-intro mb-5">Gagasan dan pertanyaan yang sedang saya pelajari. Belum menjadi produk, tetapi terus saya pikirkan.</p>
-        <div class="row">
-          {exploring.map((p) => (
-            <div class="col-md-6 mb-4">
-              <div class="explore-item">
-                <span class="status">Eksplorasi</span>
-                <h3 class="mt-2">{p.name}</h3>
-                {p.summary && <p class="mb-2" style="color:#3A4452">{p.summary}</p>}
-                {p.description && <p class="text-muted-tw mb-0" style="font-size:.9375rem">{p.description}</p>}
-              </div>
-            </div>
+        <SectionHeader label="02 / Nilai" id="h-nilai"><Fragment set:html={fmtTitle(p.values_title)} /></SectionHeader>
+        <div class="nilai4" data-stagger>
+          {has(p.values, 'title').map((v, i) => <div class="nilai reveal"><span class="n">{String(i + 1).padStart(2, '0')}</span><h3>{v.title}</h3><p>{v.text}</p></div>)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {(mitra.length > 0 || partners.length > 0) && (
+    <section class="section" id="mitra" aria-labelledby="h-mitra">
+      <div class="container">
+        <SectionHeader label="03 / Kepercayaan" id="h-mitra"><Fragment set:html={fmtTitle(p.partners_title)} /></SectionHeader>
+        {p.partners_text && <p class="eco-intro reveal">{p.partners_text}</p>}
+        {mitra.length > 0 && <><p class="eyebrow reveal" style="margin-bottom:14px">Sekolah mitra ({mitra.length}) · dan 100+ mitra lainnya</p><div class="logos-grid reveal">{mitra.map((l) => <img src={l.image} alt={l.alt || 'Logo sekolah mitra'} width="160" height="160" loading="lazy" decoding="async" />)}</div></>}
+        {partners.length > 0 && <><p class="eyebrow reveal" style="margin:36px 0 14px">Partner ({partners.length})</p><div class="logos-grid logos-grid--wide reveal">{partners.map((l) => <img src={l.image} alt={l.alt || 'Logo partner'} width="320" height="162" loading="lazy" decoding="async" />)}</div></>}
+      </div>
+    </section>
+  )}
+
+  <section class="section" id="pencapaian" aria-labelledby="h-capai">
+    <div class="container">
+      <SectionHeader label="04 / Dampak" id="h-capai"><Fragment set:html={fmtTitle(p.awards_title)} /></SectionHeader>
+      {p.awards_text && <p class="eco-intro reveal">{p.awards_text}</p>}
+      <div class="split2">
+        <ol class="awards__list" data-stagger aria-label="Penghargaan SIDIGS">
+          {has(awards.items, 'title').map((a, i) => (
+            <li class="award reveal"><span class="award__n">{String(i + 1).padStart(2, '0')}</span><span><span class="award__t">{a.title}</span><span class="award__o">{a.org}</span></span><span class="award__r">{a.rank}{a.year && <small>{a.year}</small>}</span></li>
+          ))}
+        </ol>
+        <aside aria-label={journey.milestones_label}>
+          <p class="eyebrow eyebrow--accent reveal">{journey.milestones_label}</p>
+          <ol data-stagger style="margin-top:16px">
+            {has(journey.milestones, 'title').map((m, i) => <li class="mile reveal"><span class="mile__n">{String(i + 1).padStart(2, '0')}</span><div><b>{m.title}</b><span>{m.who}</span></div></li>)}
+          </ol>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  {gallery.length > 0 && (
+    <section class="section" id="dokumentasi" aria-labelledby="h-doc">
+      <div class="container">
+        <SectionHeader label="05 / Lapangan" id="h-doc"><Fragment set:html={fmtTitle(p.gallery_title)} /></SectionHeader>
+        <div class="docs-grid" data-stagger>
+          {gallery.map((g) => (
+            <button class="doc reveal" type="button" data-full={g.image} data-cap={g.caption} aria-label={`Perbesar foto: ${g.caption || 'dokumentasi'}`}>
+              <img src={g.image} alt={g.caption || 'Dokumentasi SIDIGS'} width="960" height="640" loading="lazy" decoding="async" />
+            </button>
           ))}
         </div>
       </div>
     </section>
   )}
 
-  <CtaBand title="Punya gagasan untuk dikerjakan bersama?" text="Saya terbuka untuk kolaborasi yang membawa dampak bagi pendidikan dan ekosistem bisnis yang bernilai." />
-</Base>
+  {projects.length > 0 && (
+    <section class="section" id="proyek-lain" aria-labelledby="h-lain">
+      <div class="container">
+        <SectionHeader label="06 / Lainnya" id="h-lain"><Fragment set:html={fmtTitle(p.projects_title)} /></SectionHeader>
+        <div class="proj-grid" data-stagger>
+          {projects.map((pr) => <ProjectCard name={pr.name} role={pr.role} summary={pr.summary} logo={pr.logo_url} url={pr.url} />)}
+        </div>
+        {devPreview && <p class="dev-note">Pratinjau lokal: ini data contoh karena database belum terhubung. Di situs asli, daftar ini diambil dari CMS &gt; Proyek.</p>}
+      </div>
+    </section>
+  )}
+
+  <CtaBand title={p.cta_title} text={p.cta_text} label={p.cta_label} href={p.cta_url} external />
+
+  <dialog class="lightbox" id="lightbox" aria-label="Foto dokumentasi">
+    <button class="btn btn--ghost" type="button" data-close aria-label="Tutup"><Icon name="close" /></button>
+    <img alt="" />
+  </dialog>
+  <script>
+    import '../scripts/lightbox.ts';
+  </script>
+</BaseV2>

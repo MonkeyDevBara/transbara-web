@@ -51,18 +51,23 @@ function normalize(row: any): Article {
   return { ...rest, tags: (article_tags ?? []).map((t: any) => t.tag).filter(Boolean) };
 }
 
+/** PostgrestError bukan instance Error; bungkus agar stack trace & penanganan error Astro/Vite normal. */
+function toError(e: { message?: string; details?: string; code?: string }): Error {
+  return Object.assign(new Error(e.message || 'Query Supabase gagal'), { cause: e, code: e.code });
+}
+
 export async function getArticles(): Promise<Article[]> {
   const { data, error } = await supabase
     .from('articles')
     .select(ARTICLE_SELECT)
     .order('published_at', { ascending: false });
-  if (error) throw error;
+  if (error) throw toError(error);
   return (data ?? []).map(normalize);
 }
 
 export async function getArticle(slug: string): Promise<Article | null> {
   const { data, error } = await supabase.from('articles').select(ARTICLE_SELECT).eq('slug', slug).maybeSingle();
-  if (error) throw error;
+  if (error) throw toError(error);
   return data ? normalize(data) : null;
 }
 
@@ -82,19 +87,19 @@ export async function getRelatedIds(articleId: string): Promise<string[]> {
 
 export async function getCategories(): Promise<Category[]> {
   const { data, error } = await supabase.from('categories').select('*').order('sort_order');
-  if (error) throw error;
+  if (error) throw toError(error);
   return data ?? [];
 }
 
 export async function getProjects(): Promise<Project[]> {
   const { data, error } = await supabase.from('projects').select('*').order('sort_order');
-  if (error) throw error;
+  if (error) throw toError(error);
   return data ?? [];
 }
 
 export async function getTopics(): Promise<Topic[]> {
   const { data, error } = await supabase.from('speaking_topics').select('*').order('sort_order');
-  if (error) throw error;
+  if (error) throw toError(error);
   return data ?? [];
 }
 

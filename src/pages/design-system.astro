@@ -1,123 +1,126 @@
 ---
-import Base from '../layouts/Base.astro';
-import ArticleCard from '../components/ArticleCard.astro';
-import AuthorBlock from '../components/AuthorBlock.astro';
-import ProjectFeature from '../components/ProjectFeature.astro';
-import Newsletter from '../components/Newsletter.astro';
-import StateBox from '../components/StateBox.astro';
-import SampleLabel from '../components/SampleLabel.astro';
-import Icon from '../components/Icon.astro';
-import { getArticles, getProjects, safe } from '../lib/data';
+// Referensi sistem desain v2 (noindex, tidak ada di navigasi).
+import BaseV2 from '../layouts/BaseV2.astro';
+import Button from '../components/v2/Button.astro';
+import SectionHeader from '../components/v2/SectionHeader.astro';
+import QuoteCard from '../components/v2/QuoteCard.astro';
+import Accordion from '../components/v2/Accordion.astro';
+import Icon from '../components/v2/Icon.astro';
 
-const [{ data: articles }, { data: projects }] = await Promise.all([safe(getArticles, []), safe(getProjects, [])]);
+const lin = (c: number) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const lum = (h: string) => { const n = parseInt(h.slice(1), 16); return 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255); };
+const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return ((x + 0.05) / (y + 0.05)).toFixed(1); };
+
 const colors = [
-  ['Putih', '#FFFFFF', 'Latar utama'],
-  ['Off-white dingin', '#F6F8FB', 'Latar seksi selang-seling'],
-  ['Biru navy', '#16325C', 'Heading, tombol primer, seksi gelap'],
-  ['Biru tua', '#0D2140', 'Hover, footer'],
-  ['Biru lembut', '#E8EFF8', 'Badge, highlight, area potret'],
-  ['Charcoal kebiruan', '#1F2733', 'Teks body'],
-  ['Abu muted', '#6B7380', 'Teks sekunder, meta'],
-  ['List emas', '#C5A46D', 'Garis aksen 1–2px saja'],
+  { name: '--bg', hex: '#05070B', use: 'Latar utama' },
+  { name: '--bg-2', hex: '#0A0F1A', use: 'Seksi selang-seling, kartu' },
+  { name: '--bg-3', hex: '#0F1626', use: 'Hover kartu, input' },
+  { name: '--line', hex: '#18223A', use: 'Garis pemisah, border' },
+  { name: '--navy-900', hex: '#0A1D4A', use: 'Panel biru tua (kutipan, kartu SIDIGS)' },
+  { name: '--navy-700', hex: '#123C8F', use: 'Gradien kata raksasa, hover tombol' },
+  { name: '--accent', hex: '#2F6BFF', use: 'Titik judul, angka besar, progress bar' },
+  { name: '--accent-strong', hex: '#2559E0', use: 'Latar tombol (teks putih)' },
+  { name: '--accent-soft', hex: '#7FA6FF', use: 'Semua teks aksen kecil' },
+  { name: '--text', hex: '#EEF2F8', use: 'Teks utama' },
+  { name: '--muted', hex: '#8A94A8', use: 'Teks sekunder' },
+].map((c) => ({ ...c, onBg: ratio(c.hex, '#05070B'), onBg2: ratio(c.hex, '#0A0F1A'), white: ratio(c.hex, '#FFFFFF') }));
+
+const journey = [
+  { period: '2020 · SEKARANG', role: 'Founder & CEO', org: 'SIDIGS', text: 'Membangun ekosistem aplikasi sekolah terintegrasi yang kini dipakai 100+ sekolah, dari administrasi, pembelajaran, hingga tata kelola.' },
+  { period: '2019 · SEKARANG', role: 'Managing Director', org: 'CV. Pendekar Pendidikan Digital', text: 'Badan usaha di balik SIDIGS: strategi, kemitraan, dan operasional.' },
+  { period: '2017 – 2019', role: 'Kepala Sekolah', org: 'Khalifah Islamic Boarding School', text: 'Memimpin sekolah dan melihat langsung beban administrasi yang menjadi alasan lahirnya SIDIGS.' },
 ];
 ---
-<Base title="Design System" noindex>
-  <section class="page-head">
-    <div class="container">
-      <span class="gold-rule"></span>
-      <h1>Design System</h1>
-      <p class="section-intro">Halaman referensi komponen. Fondasi gaya dari Argon Design System (Bootstrap 4), dengan palet, tipografi, dan aturan list emas sesuai brief Transbara Wahyu.</p>
-    </div>
-  </section>
+<BaseV2 title="Design System" noindex>
+  <div class="container">
+    <section class="ds-block" style="padding-top:64px">
+      <p class="eyebrow eyebrow--accent reveal">Transbara v2 / Referensi komponen</p>
+      <h1 class="display display--xl reveal" style="margin-top:16px">Design<br />System<span class="dot">.</span></h1>
+      <p class="lead reveal" style="margin-top:24px">Dark editorial, biru tua dan hitam. Semua komponen di bawah dipakai ulang di beranda dan halaman lain. Coba tombol <b>Motion</b> di navigasi untuk mematikan semua animasi.</p>
+    </section>
 
-  <div class="container pb-5">
-    <section class="ds-section">
-      <span class="ds-label">Palet warna · 70% putih/off-white, 25% biru, 5% emas</span>
-      <div class="row">
-        {colors.map(([name, hex, use]) => (
-          <div class="col-6 col-md-3 mb-4">
-            <div class="swatch"><div class="sw" style={`background:${hex}`}></div><div class="sw-info"><strong>{name}</strong><br /><code>{hex}</code><br /><span class="text-muted-tw">{use}</span></div></div>
+    <section class="ds-block">
+      <SectionHeader label="01 / Warna">Palet<span class="dot">.</span></SectionHeader>
+      <div class="ds-grid" data-stagger>
+        {colors.map((c) => (
+          <div class="swatch reveal">
+            <div class="swatch__c" style={`background:${c.hex}`}></div>
+            <div class="swatch__m">
+              <code class="swatch__n">{c.name}</code> <code>{c.hex}</code>
+              <p>{c.use}</p>
+              <p>Kontras: di --bg {c.onBg}:1 · di --bg-2 {c.onBg2}:1 · dengan putih {c.white}:1</p>
+            </div>
           </div>
         ))}
       </div>
+      <p class="ds-note">Teks kecil berwarna aksen selalu memakai <code>--accent-soft</code> (≥ 8:1). <code>--accent</code> hanya untuk elemen besar; teks putih di atas <code>--accent-strong</code> memenuhi 4.5:1 (WCAG AA).</p>
     </section>
 
-    <section class="ds-section">
-      <span class="ds-label">Tipografi · DM Serif Display (heading), Inter (body &amp; UI)</span>
-      <h1 style="font-size:3.5rem">Heading 1 · Menjaga Makna</h1>
-      <h2>Heading 2 · Pikiran yang Saya Bagikan</h2>
-      <h3>Heading 3 · Tiga Hal yang Saya Tekuni</h3>
-      <p class="lead-serif">Lead serif untuk paragraf pembuka editorial.</p>
-      <p style="max-width: 40rem">Body Inter 16–18px, line-height 1.65–1.8. Teks body memakai charcoal kebiruan #1F2733 dengan kontras kuat di atas putih.</p>
-      <p class="text-muted-tw" style="font-size:.875rem">Teks sekunder dan meta artikel memakai abu muted #6B7380.</p>
-      <span class="eyebrow">Eyebrow label</span>
-    </section>
-
-    <section class="ds-section">
-      <span class="ds-label">List emas</span>
-      <span class="gold-rule"></span>
-      <blockquote class="pull-quote">Pull quote dengan border kiri emas 2px.</blockquote>
-      <div class="bg-navy on-dark p-4 rounded"><span class="gold-rule"></span><span class="eyebrow">Teks emas hanya di atas navy</span><h3>Seksi gelap</h3></div>
-    </section>
-
-    <section class="ds-section">
-      <span class="ds-label">Tombol</span>
-      <div class="d-flex flex-wrap align-items-center" style="gap:1rem">
-        <a href="#" class="btn btn-primary">Primary</a>
-        <a href="#" class="btn btn-secondary">Secondary</a>
-        <a href="#" class="text-link">Text link <Icon name="arrow" size={16} /></a>
-        <button class="btn btn-primary" disabled>Disabled</button>
-        <span class="bg-navy p-3 rounded d-inline-flex on-dark" style="gap:.75rem"><a href="#" class="btn btn-light-tw">Di atas navy</a><a href="#" class="btn btn-outline-light-tw">Outline</a></span>
+    <section class="ds-block">
+      <SectionHeader label="02 / Tipografi">Huruf<span class="dot">.</span></SectionHeader>
+      <div style="display:grid;gap:28px">
+        <div class="reveal"><p class="eyebrow">Display XL · Anton</p><p class="display display--xl">Founder &amp; CEO<span class="dot">.</span></p></div>
+        <div class="reveal"><p class="eyebrow">Display LG · judul seksi</p><p class="display display--lg">Karya yang bicara<span class="dot">.</span></p></div>
+        <div class="reveal"><p class="eyebrow">Aksen tulisan tangan · Caveat</p><p class="hand" style="font-size:clamp(34px,4vw,48px)">Hello, I'm</p></div>
+        <div class="reveal"><p class="eyebrow">Body · Manrope 400</p><p class="lead">Membantu sekolah bekerja lebih rapi lewat teknologi yang sederhana dan benar-benar dipakai.</p></div>
+        <div class="reveal"><p class="eyebrow">Eyebrow · label kecil</p><p class="eyebrow eyebrow--accent">01 / Karya</p></div>
       </div>
     </section>
 
-    <section class="ds-section">
-      <span class="ds-label">Badge &amp; label</span>
-      <div class="d-flex flex-wrap" style="gap:.5rem">
-        <span class="badge-cat">Pendidikan &amp; Teknologi</span><span class="badge-cat">Muslimpreneur</span><span class="role-chip">Peran: Founder</span><SampleLabel />
+    <section class="ds-block">
+      <SectionHeader label="03 / Tombol & tautan">Aksi<span class="dot">.</span></SectionHeader>
+      <div class="ds-row reveal">
+        <Button href="#" variant="primary" icon="arrow-down">Lihat karya saya</Button>
+        <Button href="#" variant="primary" size="lg" icon="arrow-ur" magnetic>Mulai percakapan</Button>
+        <Button href="#" variant="ghost" icon="download">Download CV</Button>
+        <Button href="#" variant="link" icon="arrow-ur">Studi kasus SIDIGS</Button>
+        <a class="u-link" href="#">Tautan teks biasa</a>
+      </div>
+      <p class="ds-note">Tombol bertanda magnetik (kedua) sedikit mengikuti kursor di desktop saat Motion on.</p>
+    </section>
+
+    <section class="ds-block">
+      <SectionHeader label="04 / Angka & label" linkLabel="Contoh tautan" linkHref="#">Bukti<span class="dot">.</span></SectionHeader>
+      <div class="ds-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <div class="stats" data-stagger>
+          <div class="stat reveal"><span class="stat__num"><span data-count="100">100</span><sup>+</sup></span><span class="stat__label">Sekolah mitra di Indonesia</span></div>
+          <div class="stat reveal"><span class="stat__num"><span data-count="15">15</span></span><span class="stat__label">Produk dalam ekosistem SIDIGS</span></div>
+          <div class="stat reveal"><span class="stat__num"><span data-count="5">5</span><sup>+</sup></span><span class="stat__label">Penghargaan &amp; Top 10 startup</span></div>
+        </div>
+        <div style="display:grid;gap:24px;align-content:start" class="reveal">
+          <div class="chips"><span class="chip">Mobile app</span><span class="chip chip--solid">Web platform</span><span class="chip chip--accent">1st winner</span></div>
+          <p class="eyebrow"><span class="live-dot"></span>Terbuka untuk kolaborasi &amp; speaking</p>
+          <span class="badge-spin" aria-hidden="true"><Icon name="asterisk" /></span>
+        </div>
       </div>
     </section>
 
-    <section class="ds-section">
-      <span class="ds-label">Kartu artikel · feature, row, compact, text</span>
-      {articles[0] && <ArticleCard article={articles[0]} variant="feature" />}
-      <div class="row mt-5">
-        <div class="col-md-6 mb-5">{articles[1] && <ArticleCard article={articles[1]} variant="row" />}</div>
-        <div class="col-md-6 mb-5">{articles[2] && <ArticleCard article={articles[2]} variant="compact" />}</div>
+    <section class="ds-block">
+      <SectionHeader label="05 / Kutipan & timeline">Cerita<span class="dot">.</span></SectionHeader>
+      <div style="display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
+        <QuoteCard sign="Transbara" foot="Let's make schools simpler">Sebelum membangun startup, saya adalah kepala sekolah, dan dari ruang itulah saya belajar bahwa transformasi digital tidak dimulai dari teknologi, tetapi dari memahami proses yang ingin diperbaiki.</QuoteCard>
+        <Accordion items={journey} />
       </div>
-      {articles[3] && <ArticleCard article={articles[3]} variant="text" />}
     </section>
 
-    <section class="ds-section">
-      <span class="ds-label">Blok profil penulis</span>
-      <AuthorBlock />
-      <div class="mt-4"><AuthorBlock variant="card" /></div>
-    </section>
-
-    <section class="ds-section">
-      <span class="ds-label">Kartu proyek</span>
-      {projects[0] && <ProjectFeature project={projects[0]} />}
-    </section>
-
-    <section class="ds-section">
-      <span class="ds-label">Breadcrumb, pencarian, pagination</span>
-      <ol class="tw-breadcrumb"><li><a href="#">Beranda</a></li><li><a href="#">Artikel</a></li><li aria-current="page">Judul artikel</li></ol>
-      <div class="search-input mb-4" style="max-width:360px"><Icon name="search" /><input type="search" class="form-control" placeholder="Cari judul atau topik…" aria-label="Cari" /></div>
-      <ul class="tw-pagination"><li><a href="#">‹</a></li><li><span class="current">1</span></li><li><a href="#">2</a></li><li><a href="#">3</a></li><li><a href="#">›</a></li></ul>
-    </section>
-
-    <section class="ds-section">
-      <span class="ds-label">Form newsletter</span>
-      <Newsletter />
-    </section>
-
-    <section class="ds-section">
-      <span class="ds-label">State: kosong, memuat, error</span>
-      <div class="row">
-        <div class="col-md-4 mb-4"><StateBox type="empty" /></div>
-        <div class="col-md-4 mb-4"><StateBox type="loading" /><div class="skeleton mt-3" style="height:14px"></div><div class="skeleton mt-2" style="height:14px; width:70%"></div></div>
-        <div class="col-md-4 mb-4"><StateBox type="error" /></div>
+    <section class="ds-block">
+      <SectionHeader label="06 / Kontak">Hubungi<span class="dot">.</span></SectionHeader>
+      <div style="max-width:560px" data-stagger>
+        <a class="contact-row reveal" href="#"><span class="contact-row__ic"><Icon name="mail" /></span><span><span class="contact-row__label">Email</span><span class="contact-row__val">transbarawahyu@gmail.com</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+        <a class="contact-row reveal" href="#"><span class="contact-row__ic"><Icon name="instagram" /></span><span><span class="contact-row__label">Instagram</span><span class="contact-row__val">@transbara.alfatih</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
+        <a class="contact-row reveal" href="#"><span class="contact-row__ic"><Icon name="pin" /></span><span><span class="contact-row__label">Based in</span><span class="contact-row__val">Malang, Indonesia</span></span><span class="contact-row__go"><Icon name="arrow-ur" /></span></a>
       </div>
+    </section>
+
+    <section class="ds-block" style="border-bottom:0">
+      <SectionHeader label="07 / Gerak">Animasi<span class="dot">.</span></SectionHeader>
+      <ul style="display:grid;gap:8px;color:var(--text-soft);max-width:70ch">
+        <li>• <b>Scroll reveal</b>: semua blok di halaman ini muncul bertahap saat digulir.</li>
+        <li>• <b>Count-up</b>: angka di seksi 04 menghitung naik saat terlihat.</li>
+        <li>• <b>Progress bar</b>: garis biru di tepi atas layar mengikuti scroll.</li>
+        <li>• <b>Accordion</b>: ketuk baris timeline di seksi 05.</li>
+        <li>• <b>Toggle Motion</b>: matikan semua animasi (tersimpan di perangkat; otomatis mati bila sistem meminta reduced motion).</li>
+      </ul>
     </section>
   </div>
-</Base>
+</BaseV2>

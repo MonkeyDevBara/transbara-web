@@ -1,0 +1,75 @@
+---
+import '../styles/v2/main.scss';
+import Nav from '../components/v2/Nav.astro';
+import Footer from '../components/v2/Footer.astro';
+import { getContent } from '../lib/content';
+import { contactInfo } from '../lib/profile';
+import { siteBase, abs, ldScript, personLd, orgLd, websiteLd, breadcrumbLd } from '../lib/seo';
+
+interface Props { title?: string; description?: string; canonical?: string | null; ogImage?: string | null; ogType?: 'website' | 'article' | 'profile'; noindex?: boolean; home?: boolean; crumbs?: { name: string; href?: string }[]; jsonld?: object[]; publishedAt?: string; modifiedAt?: string }
+const { title, description, canonical, ogImage, ogType = 'website', noindex = false, home = false, crumbs, jsonld = [], publishedAt, modifiedAt } = Astro.props;
+const content = await getContent();
+const info = contactInfo(content);
+const siteName = content.site.name;
+const fullTitle = title ? `${title} | ${siteName}` : `${siteName} | ${content.site.tagline}`;
+const desc = description ?? content.site.description;
+const base = siteBase(Astro);
+const canonicalUrl = canonical ? abs(canonical, base) : abs(Astro.url.pathname, base);
+const ogImg = abs(ogImage || content.site.og_image || '/v2/img/og-default.jpg', base);
+// JSON-LD: Person + Organization + WebSite di beranda dan halaman Tentang; BreadcrumbList di halaman dalam; sisanya dari halaman.
+const graph: object[] = [...(home || /^\/(tentang|proyek|artikel\/)/.test(Astro.url.pathname) ? [personLd(base, content), orgLd(base), websiteLd(base, siteName)] : []), ...(crumbs ? [breadcrumbLd(base, crumbs, Astro.url.pathname)] : []), ...jsonld];
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:image" content={ogImg} />
+    {publishedAt && <meta property="article:published_time" content={publishedAt} />}
+    {modifiedAt && <meta property="article:modified_time" content={modifiedAt} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={ogImg} />
+    <meta name="author" content="Transbara Wahyu Firmansyah" />
+    <meta name="theme-color" content="#05070B" />
+    {graph.length > 0 && <script type="application/ld+json" set:html={ldScript(graph)} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      // Tentukan mode gerak sebelum cat pertama (tanpa kedip). Pengaman: bila skrip animasi gagal dimuat, konten tetap tampil.
+      (function () {
+        var d = document.documentElement; d.classList.add('js');
+        var p = null; try { p = localStorage.getItem('tw-motion'); } catch (e) {}
+        var r = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        d.dataset.motion = (p ? p === 'on' : !r) ? 'on' : 'off';
+        setTimeout(function () { if (!window.__mm) d.dataset.motion = 'off'; }, 3500);
+      })();
+    </script>
+  </head>
+  <body id="top">
+    <a href="#konten" class="skip-link">Lewati ke konten</a>
+    <div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
+    <Nav home={home} wordmark={content.home_header.wordmark} ctaLabel={content.home_header.cta_label} />
+    <main id="konten">
+      <slot />
+    </main>
+    <Footer instagram={info.instagram} linkedin={info.linkedin} email={info.email} wordmark={content.home_header.wordmark} copyright={content.home_footer.copyright} />
+    <script>
+      import '../scripts/motion.ts';
+    </script>
+  </body>
+</html>

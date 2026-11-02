@@ -13,4 +13,7 @@ if (!url || !key) {
 // Klien publik (anon): hanya membaca konten publik dan mengirim formulir; semuanya dibatasi RLS.
 export const supabase = createClient<Database>(url, key, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  // Produksi: biarkan retry bawaan (1s, 2s, 4s) untuk gangguan jaringan sesaat.
+  // Dev: matikan, supaya tanpa Supabase lokal halaman tidak menunggu ~7 detik per query.
+  db: { retry: !import.meta.env.DEV },
 });

@@ -1,0 +1,18 @@
+---
+// Ornamen daun laurel di kiri/kanan angka (SVG dihasilkan dari kurva Bezier, tanpa aset gambar).
+interface Props { side?: 'l' | 'r' }
+const { side = 'l' } = Astro.props;
+const P = [[52, 124], [18, 100], [12, 52], [44, 10]];
+const bez = (t: number) => { const u = 1 - t; return [0, 1].map((k) => u*u*u*P[0][k] + 3*u*u*t*P[1][k] + 3*u*t*t*P[2][k] + t*t*t*P[3][k]); };
+const tan = (t: number) => { const u = 1 - t; const d = [0, 1].map((k) => 3*u*u*(P[1][k]-P[0][k]) + 6*u*t*(P[2][k]-P[1][k]) + 3*t*t*(P[3][k]-P[2][k])); return Math.atan2(d[1], d[0]) * 180 / Math.PI; };
+const leaves = [];
+for (let i = 0; i < 7; i++) {
+  const t = 0.1 + i * 0.125; const [x, y] = bez(t); const a = tan(t);
+  leaves.push({ x, y, rot: a + 90 - 38 });   // daun sisi dalam
+  leaves.push({ x: x - 3, y: y + 1, rot: a + 90 + 52 });   // daun sisi luar
+}
+---
+<svg class:list={['laurel', side === 'r' && 'laurel--r']} viewBox="0 0 64 134" width="48" height="100" fill="currentColor" aria-hidden="true" focusable="false">
+  <path d="M52 124C18 100 12 52 44 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+  {leaves.map((l) => <ellipse cx={l.x.toFixed(1)} cy={l.y.toFixed(1)} rx="4.2" ry="11" transform={`rotate(${l.rot.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`} />)}
+</svg>
