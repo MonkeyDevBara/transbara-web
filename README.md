@@ -4,7 +4,7 @@ Situs personal branding (authority building) Transbara Wahyu Firmansyah. Brief l
 
 ## Stack
 
-- **Astro 5** (halaman statis, siap dipasang ke Cloudflare Pages nanti)
+- **Astro 5** (SSR dengan adapter Node, dijalankan di VPS lewat PM2 + Nginx)
 - **Argon Design System** (Bootstrap 4 SCSS) sebagai fondasi gaya, warna di-override sesuai brief, ada di `src/styles/argon/`
 - **Supabase** project `Transbara Wahyu` (ref `odewmxiklbcmrpwqvwbj`, region Singapore, organisasi SIDIGS)
 
@@ -30,6 +30,8 @@ Buka http://localhost:4321. Saat `dev`, data diambil langsung dari Supabase di s
 | `/design-system` | Referensi komponen (noindex, tidak ada di navigasi) |
 
 ## Database (Supabase)
+
+Skema, RLS, Storage, dan cara membuat admin pertama: lihat **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** (SQL di `supabase/migrations/`).
 
 Tabel: `articles`, `categories`, `tags`, `article_tags`, `article_related`, `media`, `projects`, `speaking_topics`, `site_settings`, `contact_messages`, `newsletter_subscribers`. Semua memakai RLS:
 
@@ -66,12 +68,18 @@ Modul: Ringkasan, Halaman Beranda (header sampai footer), Pengaturan Website (id
 
 **Menambah konten baru di landing page**: tambahkan field di `SECTIONS` dan `DEFAULTS` pada `src/lib/content.ts`, lalu baca lewat `getContent()`. Form admin otomatis ikut muncul.
 
-## Hosting (Cloudflare Pages, gratis)
+## Hosting (VPS: Node + PM2 + Nginx)
 
-- Alamat: **https://transbara-wahyu.pages.dev** (proyek Pages `transbara-wahyu`, branch produksi `main`, akun Cloudflare efendi20yusuf@gmail.com). Admin: https://transbara-wahyu.pages.dev/admin
-- Mode SSR (`@astrojs/cloudflare`): halaman publik dibuat saat diakses, jadi perubahan dari admin langsung tampil tanpa deploy ulang. `/admin` tetap file statis.
-- Deploy ulang setelah mengubah kode:
+- Adapter `@astrojs/node` mode standalone, Node.js 22+. Server mendengarkan di `127.0.0.1:4321`; Nginx di depan sebagai reverse proxy.
+- Mode SSR: halaman publik dibuat saat diakses, jadi perubahan dari admin langsung tampil tanpa build ulang. `/admin` tetap file statis.
+- Deploy di server:
   ```bash
-  npm run deploy:cloudflare
+  git pull
+  cp .env.example .env   # pertama kali saja, lalu isi nilainya (jangan di-commit)
+  npm ci
+  npm run build          # variabel PUBLIC_* dibaca saat build; ubah .env = build ulang
+  pm2 start deploy/ecosystem.config.cjs   # pertama kali; selanjutnya: pm2 reload transbara-web
+  pm2 save
   ```
-- Supabase → Authentication → URL Configuration: isi **Site URL** dengan `https://transbara-wahyu.pages.dev/admin` dan tambahkan URL itu (plus `http://localhost:4321/admin`) ke **Redirect URLs**, supaya tautan "Lupa password" mengarah ke admin.
+- Nginx: contoh di `deploy/nginx.conf.example` (header keamanan, `noindex` untuk `/admin`, cache aset). Lalu `certbot --nginx` untuk HTTPS.
+- Supabase → Authentication → URL Configuration: isi **Site URL** dengan `https://DOMAIN-ANDA/admin` dan tambahkan URL itu (plus `http://localhost:4321/admin`) ke **Redirect URLs**, supaya tautan "Lupa password" mengarah ke admin.

@@ -1,0 +1,16 @@
+# Rahasia
+.env
+.env.*
+!.env.example
+
+# Dependensi & hasil build
+node_modules/
+dist/
+.astro/
+.wrangler/
+wrangler-account.json
+.vercel/
+
+# OS / editor
+.DS_Store
+*.log

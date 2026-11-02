@@ -1,8 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Klien khusus admin: sesi login disimpan di browser.
-export const sb = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, storageKey: 'tw-admin-auth', detectSessionInUrl: true },
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_PUBLISHABLE_KEY kosong saat build. Isi .env lalu jalankan npm run build ulang.');
+}
+
+// Klien khusus admin: sesi login disimpan di browser dan diperbarui otomatis.
+// Hanya memakai publishable key; hak akses ditentukan RLS (public.is_admin()), bukan UI ini.
+export const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'tw-admin-auth', detectSessionInUrl: true },
 });
 
 export const MEDIA_BUCKET = 'media';
@@ -22,7 +29,12 @@ export async function uploadImage(file: File, alt = ''): Promise<string> {
   if (error) throw error;
   const url = sb.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
   const dims = await imageSize(file).catch(() => null);
-  await sb.from('media').insert({ url, alt: alt || null, width: dims?.w ?? null, height: dims?.h ?? null });
+  const { error: dbError } = await sb.from('media').insert({ url, alt: alt || null, width: dims?.w ?? null, height: dims?.h ?? null });
+  if (dbError) {
+    // Jangan biarkan file yatim di Storage bila pencatatan gagal.
+    await sb.storage.from(MEDIA_BUCKET).remove([path]);
+    throw dbError;
+  }
   return url;
 }
 

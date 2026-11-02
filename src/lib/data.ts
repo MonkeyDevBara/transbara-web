@@ -67,11 +67,16 @@ export async function getArticle(slug: string): Promise<Article | null> {
 }
 
 export async function getRelatedIds(articleId: string): Promise<string[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('article_related')
     .select('related_id')
     .eq('article_id', articleId)
     .order('sort_order');
+  if (error) {
+    // Artikel terkait hanya pelengkap; jangan gagalkan halaman artikel.
+    console.error(error);
+    return [];
+  }
   return (data ?? []).map((r) => r.related_id);
 }
 

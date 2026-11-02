@@ -72,6 +72,7 @@ function AdminApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [admin, setAdmin] = useState<boolean | null>(null);
+  const [adminError, setAdminError] = useState(false);
   const [needPassword, setNeedPassword] = useState(authType === 'invite' || authType === 'recovery');
 
   useEffect(() => {
@@ -85,7 +86,11 @@ function AdminApp() {
 
   useEffect(() => {
     if (!session) { setAdmin(null); return; }
-    sb.rpc('is_admin').then(({ data, error }) => setAdmin(!error && data === true));
+    sb.rpc('is_admin').then(({ data, error }) => {
+      if (error) console.error('is_admin gagal. Apakah migrasi database sudah dijalankan?', error);
+      setAdminError(!!error);
+      setAdmin(!error && data === true);
+    });
   }, [session?.user?.id]);
 
   if (!ready || (session && admin === null)) return <div class="login"><span class="spin" style={{ color: '#fff' }} /></div>;
@@ -93,8 +98,10 @@ function AdminApp() {
   if (needPassword) return <SetPassword onDone={() => { setNeedPassword(false); history.replaceState(null, '', '/admin'); }} />;
   if (!admin) return (
     <div class="login"><div class="login-card">
-      <h1>Akses ditolak</h1>
-      <p class="sub">Akun <strong>{session.user.email}</strong> belum terdaftar sebagai admin situs ini.</p>
+      <h1>{adminError ? 'Tidak dapat memeriksa akses' : 'Akses ditolak'}</h1>
+      <p class="sub">{adminError
+        ? 'Server database tidak merespons pemeriksaan admin. Pastikan migrasi database sudah dijalankan, lalu muat ulang.'
+        : <>Akun <strong>{session.user.email}</strong> belum terdaftar sebagai admin situs ini.</>}</p>
       <button class="btn btn-s" onClick={() => sb.auth.signOut()}>Keluar</button>
     </div></div>
   );

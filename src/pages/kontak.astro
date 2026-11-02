@@ -84,6 +84,7 @@ const purposes = [
 
 <script>
   import { supabase } from '../lib/supabase';
+  import type { ContactPurpose } from '../lib/database.types';
 
   const form = document.getElementById('contact-form') as HTMLFormElement;
   const alertBox = document.getElementById('form-alert')!;
@@ -120,7 +121,7 @@ const purposes = [
       name: data.name.trim(),
       email: data.email.trim(),
       subject: data.subject.trim(),
-      purpose: data.purpose,
+      purpose: data.purpose as ContactPurpose,
       message: data.message.trim(),
     });
     btn.disabled = false;
