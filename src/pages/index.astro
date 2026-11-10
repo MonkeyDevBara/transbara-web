@@ -12,12 +12,13 @@ import QuoteCard from '../components/v2/QuoteCard.astro';
 import Laurel from '../components/v2/Laurel.astro';
 import VideoFacade from '../components/v2/VideoFacade.astro';
 import ProjectCard from '../components/v2/ProjectCard.astro';
+import EbookCard from '../components/v2/EbookCard.astro';
 import ContactForm from '../components/v2/ContactForm.astro';
 import { getContent } from '../lib/content';
-import { getArticles, getProjects, safe, formatDate } from '../lib/data';
+import { getArticles, getProjects, getEbooks, safe, formatDate } from '../lib/data';
 import { contactInfo, PROFILE } from '../lib/profile';
 import { fmtTitle, ytId } from '../lib/format';
-import { FILTERS, PREVIEW_PROJECTS, HOME_DEFAULTS } from '../lib/home-defaults';
+import { FILTERS, PREVIEW_PROJECTS, PREVIEW_EBOOKS, HOME_DEFAULTS } from '../lib/home-defaults';
 
 const content = await getContent();
 const info = contactInfo(content);
@@ -28,10 +29,14 @@ const { data: allArticles } = await safe(() => getArticles(), []);
 const articles = allArticles.filter((a) => !a.is_sample && a.status === 'published').slice(0, 3);
 
 // Proyek Lainnya: CMS > Proyek (hanya yang tampil di situs dan tidak diarsipkan; unggulan lebih dulu).
+// E-Book: CMS > E-Book. Mode dev + query gagal (DB mati / tabel belum dimigrasi): data contoh agar tata letak bisa ditinjau.
 const { data: projectRows, error: projectError } = await safe(() => getProjects(), []);
-const devPreview = import.meta.env.DEV && projectError; // database lokal mati: data contoh agar tata letak bisa ditinjau
-const projects = (devPreview ? PREVIEW_PROJECTS : projectRows.filter((p) => p.status !== 'archived')).slice().sort((a, b) => Number(!!b.is_featured) - Number(!!a.is_featured));
-const filters = FILTERS.filter((f) => f.key !== 'project' || projects.length > 0);
+const { data: ebookRows, error: ebookError } = await safe(() => getEbooks(), []);
+const projectsPreview = import.meta.env.DEV && projectError;
+const ebooksPreview = import.meta.env.DEV && ebookError;
+const projects = (projectsPreview ? PREVIEW_PROJECTS : projectRows.filter((p) => p.status !== 'archived')).slice().sort((a, b) => Number(!!b.is_featured) - Number(!!a.is_featured));
+const ebooks = ebooksPreview ? PREVIEW_EBOOKS : ebookRows;
+const filters = FILTERS.filter((f) => (f.key !== 'project' || projects.length > 0) && (f.key !== 'ebook' || ebooks.length > 0));
 
 const isDefaultPortrait = hero.portrait === HOME_DEFAULTS.home_hero.portrait;
 const videoId = ytId(story.video);
@@ -132,6 +137,18 @@ const downloadable = (u: string) => /\.pdf(\?|$)/i.test(u);
             </ul>
           </div>
         )}
+        {ebooks.length > 0 && (
+          <div class="ebooks" data-cat="ebook">
+            <div class="addons__head">
+              <h3 class="display display--md"><Fragment set:html={fmtTitle(work.ebooks_title)} /></h3>
+              <p class="eyebrow">{ebooks.length} e-book</p>
+            </div>
+            <div class="ebook-grid" data-stagger>
+              {ebooks.map((e, i) => <EbookCard title={e.title} tag={e.tag} text={e.summary} cover={e.cover_url} url={e.url} index={i} />)}
+            </div>
+            {ebooksPreview && <p class="dev-note">Pratinjau lokal: ini data contoh karena tabel e-book belum terhubung. Di situs asli, daftar ini diambil dari CMS &gt; E-Book.</p>}
+          </div>
+        )}
         {projects.length > 0 && (
           <div class="projects" data-cat="project">
             <div class="addons__head">
@@ -139,9 +156,9 @@ const downloadable = (u: string) => /\.pdf(\?|$)/i.test(u);
               <p class="eyebrow">{projects.length} proyek</p>
             </div>
             <div class="proj-grid" data-stagger>
-              {projects.map((p) => <ProjectCard name={p.name} role={p.role} summary={p.summary} logo={p.logo_url} url={p.url} />)}
+              {projects.map((p) => <ProjectCard name={p.name} role={p.role} summary={p.summary} logo={p.logo_url} poster={p.poster_url} url={p.url} />)}
             </div>
-            {devPreview && <p class="dev-note">Pratinjau lokal: ini data contoh karena database belum terhubung. Di situs asli, daftar ini diambil dari CMS &gt; Proyek.</p>}
+            {projectsPreview && <p class="dev-note">Pratinjau lokal: ini data contoh karena database belum terhubung. Di situs asli, daftar ini diambil dari CMS &gt; Proyek.</p>}
           </div>
         )}
       </div>

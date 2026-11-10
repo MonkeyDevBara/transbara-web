@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800" role="img" aria-label="SEKOLAH DIGITAL. ">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#123C8F"/><stop offset="1" stop-color="#060D22"/></linearGradient>
+    <pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".07"/></pattern>
+  </defs>
+  <rect width="600" height="800" fill="url(#g)"/><rect width="600" height="800" fill="url(#p)"/>
+  <circle cx="500" cy="130" r="170" fill="#7FA6FF" fill-opacity=".18"/><circle cx="90" cy="700" r="120" fill="#7FA6FF" fill-opacity=".12"/>
+  <rect x="56" y="340" width="64" height="6" fill="#7FA6FF"/>
+  <text x="56" y="384" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="4" fill="#7FA6FF">E-BOOK  /  CONTOH</text>
+  <text x="56" y="480" font-family="Impact, 'Arial Narrow', sans-serif" font-size="92" fill="#fff" letter-spacing="1">SEKOLAH</text>
+  <text x="56" y="570" font-family="Impact, 'Arial Narrow', sans-serif" font-size="92" fill="#fff" letter-spacing="1">DIGITAL.</text>
+  <text x="56" y="660" font-family="Impact, 'Arial Narrow', sans-serif" font-size="92" fill="#7FA6FF" letter-spacing="1"></text>
+  <text x="56" y="736" font-family="Helvetica, Arial, sans-serif" font-size="18" fill="#fff" fill-opacity=".7">Transbara Wahyu Firmansyah</text>
+</svg>

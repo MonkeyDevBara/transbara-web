@@ -7,7 +7,7 @@ const STATUS = [
   { value: 'exploring', label: 'Sedang dieksplorasi' },
   { value: 'archived', label: 'Arsip (tidak tampil)' },
 ];
-const BLANK = { name: '', slug: '', summary: '', description: '', role: '', contributions: [] as string[], logo_url: '', url: '', status: 'active', is_featured: false, is_published: true, sort_order: 0 };
+const BLANK = { name: '', slug: '', summary: '', description: '', role: '', contributions: [] as string[], logo_url: '', poster_url: '', url: '', status: 'active', is_featured: false, is_published: true, sort_order: 0 };
 
 export default function Projects() {
   const { data, loading, error, reload } = useLoad(() => q(sb.from('projects').select('*').order('sort_order')));
@@ -16,7 +16,7 @@ export default function Projects() {
   if (edit) return <ProjectForm init={edit} onDone={() => { setEdit(null); reload(); }} />;
   return (
     <>
-      <PageHead title="Proyek" desc='Semua proyek yang dicentang "Tampilkan di situs" dan tidak berstatus Diarsipkan tampil di tab "Proyek Lainnya" pada Beranda (kartu: logo, nama, peran, deskripsi singkat, tombol Kunjungi). Proyek "Unggulan" tampil lebih dulu.'
+      <PageHead title="Proyek" desc='Semua proyek yang dicentang "Tampilkan di situs" dan tidak berstatus Diarsipkan tampil di tab "Proyek Lainnya" pada Beranda (kartu potret: poster, peran, nama, deskripsi singkat, tombol Kunjungi). Proyek "Unggulan" tampil lebih dulu.'
         actions={<button class="btn btn-p" onClick={() => setEdit({ ...BLANK, sort_order: rows.length + 1 })}>+ Proyek baru</button>} />
       <Panel>
         {loading ? <Loading /> : error ? <ErrorState text={error} retry={reload} /> : rows.length === 0 ? <Empty title="Belum ada proyek" /> : (
@@ -113,7 +113,8 @@ function ProjectForm({ init, onDone }: { init: any; onDone: () => void }) {
               <TextField label="Nomor urut" type="number" value={String(p.sort_order)} onInput={(v) => set('sort_order', v)} />
             </div>
           </Panel>
-          <Panel title="Logo"><div class="panel-b"><ImageField label="Logo proyek" value={p.logo_url} onChange={(v) => set('logo_url', v)} help="Kosongkan untuk menampilkan nama proyek." /></div></Panel>
+          <Panel title="Poster"><div class="panel-b"><ImageField label="Poster proyek (potret)" value={p.poster_url} onChange={(v) => set('poster_url', v)} help="Gunakan rasio 3:4 (mis. 900×1200 px). Kosongkan untuk menampilkan inisial nama proyek." /></div></Panel>
+          <Panel title="Logo"><div class="panel-b"><ImageField label="Logo proyek" value={p.logo_url} onChange={(v) => set('logo_url', v)} help="Tampil kecil di samping nama. Kosongkan bila tidak ada." /></div></Panel>
           {p.id && <button type="button" class="btn btn-d" onClick={remove}>Hapus proyek</button>}
         </div>
       </div>

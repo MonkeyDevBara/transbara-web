@@ -8,6 +8,7 @@ import ContentView from './views/Content';
 import { ArticleList, ArticleEditor } from './views/Articles';
 import Taxonomy from './views/Taxonomy';
 import Projects from './views/Projects';
+import Ebooks from './views/Ebooks';
 import Topics from './views/Topics';
 import Media from './views/Media';
 import { Messages, Newsletter } from './views/Inbox';
@@ -24,6 +25,7 @@ const NAV = [
   { route: 'artikel', label: 'Artikel' },
   { route: 'kategori', label: 'Kategori & Tag' },
   { route: 'proyek', label: 'Proyek' },
+  { route: 'ebook', label: 'E-Book' },
   { route: 'topik', label: 'Topik Bicara' },
   { route: 'media', label: 'Pustaka Media' },
   { grp: 'Interaksi' },
@@ -132,6 +134,7 @@ function Shell({ email }: { email: string }) {
       case 'artikel': return id ? <ArticleEditor id={id} /> : <ArticleList query={route.query} />;
       case 'kategori': return <Taxonomy />;
       case 'proyek': return <Projects />;
+      case 'ebook': return <Ebooks />;
       case 'topik': return <Topics />;
       case 'media': return <Media />;
       case 'pesan': return <Messages onChange={refreshUnread} />;

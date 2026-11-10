@@ -50,6 +50,7 @@ export const HOME_DEFAULTS = {
     ],
     addons_title: 'Modul tambahan',
     addons,
+    ebooks_title: 'E-Book',
     projects_title: 'Proyek lainnya',
     trust_label: 'Dipercaya oleh',
     trust_title: '100+ sekolah & 13 partner',
@@ -156,6 +157,7 @@ export const FILTERS = [
   { key: 'all', label: 'Semua' },
   { key: 'mobile', label: 'Aplikasi Mobile' },
   { key: 'web', label: 'Web Platform' },
+  { key: 'ebook', label: 'E-Book' },
   { key: 'project', label: 'Proyek Lainnya' },
 ];
 
@@ -168,6 +170,12 @@ export const PURPOSES = [
 
 // Pratinjau lokal saja (dipakai hanya di mode dev bila database tidak terjangkau). Di produksi data selalu dari CMS > Proyek.
 export const PREVIEW_PROJECTS = [
-  { id: 'preview-1', name: 'SIDIGS', role: 'Founder & CEO', summary: 'Aplikasi sekolah terintegrasi berbasis web dan mobile (data contoh pratinjau).', logo_url: null as string | null, url: 'https://sidigs.com', is_featured: true },
-  { id: 'preview-2', name: 'Syabab Studio', role: 'Founder', summary: 'Studio kreatif dan digital (data contoh pratinjau, tanpa tautan).', logo_url: '/v2/img/logos/partner-01.webp', url: '', is_featured: false },
+  { id: 'preview-1', name: 'SIDIGS', role: 'Founder & CEO', summary: 'Aplikasi sekolah terintegrasi berbasis web dan mobile (data contoh pratinjau).', logo_url: null as string | null, poster_url: '/v2/img/preview/poster-1.svg' as string | null, url: 'https://sidigs.com', is_featured: true },
+  { id: 'preview-2', name: 'Syabab Studio', role: 'Founder', summary: 'Studio kreatif dan digital (data contoh pratinjau, tanpa tautan).', logo_url: '/v2/img/logos/partner-01.webp', poster_url: '/v2/img/preview/poster-2.svg' as string | null, url: '', is_featured: false },
+];
+
+// Pratinjau lokal saja (mode dev, tabel ebooks belum ada / database tidak terjangkau). Di produksi data selalu dari CMS > E-Book.
+export const PREVIEW_EBOOKS = [
+  { id: 'preview-ebook-1', title: 'Panduan Sekolah Digital', summary: 'Langkah awal digitalisasi administrasi sekolah (data contoh pratinjau).', tag: 'E-Book · PDF', cover_url: '/v2/img/preview/ebook-1.svg', url: 'https://sidigs.com' },
+  { id: 'preview-ebook-2', title: 'Kepemimpinan Muslimpreneur', summary: 'Catatan membangun usaha dengan nilai dan makna (data contoh pratinjau).', tag: 'E-Book · PDF', cover_url: '/v2/img/preview/ebook-2.svg', url: '' },
 ];

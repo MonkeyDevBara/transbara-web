@@ -80,13 +80,23 @@ export type Database = {
       projects: Table<
         {
           id: string; name: string; slug: string; summary: string | null; description: string | null; role: string | null;
-          contributions: string[]; logo_url: string | null; url: string | null; status: ProjectStatus;
+          contributions: string[]; logo_url: string | null; poster_url: string | null; url: string | null; status: ProjectStatus;
           is_featured: boolean; is_published: boolean; sort_order: number; created_at: string; updated_at: string;
         },
         {
           id?: string; name: string; slug: string; summary?: string | null; description?: string | null; role?: string | null;
-          contributions?: string[]; logo_url?: string | null; url?: string | null; status?: ProjectStatus;
+          contributions?: string[]; logo_url?: string | null; poster_url?: string | null; url?: string | null; status?: ProjectStatus;
           is_featured?: boolean; is_published?: boolean; sort_order?: number; created_at?: string; updated_at?: string;
+        }
+      >;
+      ebooks: Table<
+        {
+          id: string; title: string; slug: string; summary: string | null; tag: string | null; cover_url: string | null;
+          url: string | null; is_published: boolean; sort_order: number; created_at: string; updated_at: string;
+        },
+        {
+          id?: string; title: string; slug: string; summary?: string | null; tag?: string | null; cover_url?: string | null;
+          url?: string | null; is_published?: boolean; sort_order?: number; created_at?: string; updated_at?: string;
         }
       >;
       speaking_topics: Table<

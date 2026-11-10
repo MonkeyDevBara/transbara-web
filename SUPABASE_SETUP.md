@@ -16,6 +16,7 @@ Panduan menyiapkan database, Storage, dan login admin. Semua SQL bersifat **idem
 | 1 | `supabase/migrations/20261102000000_initial_schema.sql` | 12 tabel, relasi, constraint, index, trigger `updated_at`, fungsi `is_admin()`, hak akses, **RLS + semua policy** |
 | 2 | `supabase/migrations/20261102000100_storage.sql` | Bucket `media` + policy Storage |
 | 3 | `supabase/seed.sql` | Pengaturan situs bawaan (opsional, tidak menimpa data) |
+| 4 | `supabase/migrations/20261110000000_ebooks_and_project_poster.sql` | Tabel `ebooks` (+RLS, trigger) dan kolom `projects.poster_url` (tab E-Book & poster Proyek Lainnya) |
 
 Untuk tiap file: buka isinya, tempel ke SQL Editor, klik **Run**, pastikan hasilnya `Success`. Jika ada error, jangan lanjut ke file berikutnya; file dijalankan dalam satu transaksi sehingga tidak ada perubahan setengah jalan.
 
@@ -136,6 +137,7 @@ select conrelid::regclass, conname from pg_constraint where connamespace = 'publ
 | Tag & artikel terkait | hanya milik artikel yang terlihat | CRUD |
 | Kategori, tag | baca | CRUD |
 | Proyek | baca bila `is_published` dan status `active`/`exploring` | CRUD |
+| E-Book | baca bila `is_published` | CRUD |
 | Topik bicara | baca bila `is_published` | CRUD |
 | `site_settings` | baca bila `is_public` (default true) | CRUD |
 | `contact_messages` | **hanya kirim** (tidak bisa baca) | baca, tandai dibaca, hapus |

@@ -37,9 +37,22 @@ export type Project = {
   role: string | null;
   contributions: string[];
   logo_url: string | null;
+  poster_url: string | null;
   url: string | null;
   status: 'active' | 'exploring' | 'archived';
   is_featured: boolean;
+};
+
+export type Ebook = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string | null;
+  tag: string | null;
+  cover_url: string | null;
+  url: string | null;
+  is_published: boolean;
+  sort_order: number;
 };
 
 export type Topic = { id: string; title: string; description: string | null; is_signature: boolean };
@@ -93,6 +106,12 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getProjects(): Promise<Project[]> {
   const { data, error } = await supabase.from('projects').select('*').order('sort_order');
+  if (error) throw toError(error);
+  return data ?? [];
+}
+
+export async function getEbooks(): Promise<Ebook[]> {
+  const { data, error } = await supabase.from('ebooks').select('*').order('sort_order');
   if (error) throw toError(error);
   return data ?? [];
 }

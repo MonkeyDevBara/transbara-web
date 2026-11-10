@@ -17,6 +17,8 @@ npm run dev
 
 Buka http://localhost:4321. Saat `dev`, data diambil langsung dari Supabase di setiap request, jadi perubahan di database langsung terlihat.
 
+Di mode `npm run dev`, bila database tidak terjangkau (atau tabel `ebooks` belum dimigrasi), tab **E-Book** dan **Proyek Lainnya** memakai 2 data contoh masing-masing (bertanda "Pratinjau lokal"; gambar di `public/v2/img/preview/`). Di produksi selalu data CMS.
+
 ## Halaman
 
 | Rute | Isi |
@@ -33,7 +35,7 @@ Buka http://localhost:4321. Saat `dev`, data diambil langsung dari Supabase di s
 
 Skema, RLS, Storage, dan cara membuat admin pertama: lihat **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** (SQL di `supabase/migrations/`).
 
-Tabel: `articles`, `categories`, `tags`, `article_tags`, `article_related`, `media`, `projects`, `speaking_topics`, `site_settings`, `contact_messages`, `newsletter_subscribers`. Semua memakai RLS:
+Tabel: `articles`, `categories`, `tags`, `article_tags`, `article_related`, `media`, `projects`, `ebooks`, `speaking_topics`, `site_settings`, `contact_messages`, `newsletter_subscribers`. Semua memakai RLS:
 
 - Publik hanya bisa membaca artikel berstatus `published` yang `published_at`-nya sudah lewat, serta proyek yang `is_published`.
 - Publik hanya bisa **menambah** pesan kontak dan email newsletter, tidak bisa membacanya.
@@ -57,7 +59,7 @@ Hal yang bisa diatur langsung dari Supabase (Table Editor):
 
 Tidak ada tautan ke admin dari situs publik; buka langsung `http://localhost:4321/admin`. Halaman ini `noindex` dan diblokir di `robots.txt`.
 
-Modul: Ringkasan, Halaman Beranda (header sampai footer), Halaman Lain (Proyek, Tentang, Artikel, Kontak, 404), Pengaturan Website (identitas, SEO, email, sosmed), Artikel (draft, terbit, jadwal, sampul, gambar inline, tag, artikel terkait, SEO + pratinjau Google), Kategori & Tag, Proyek, Topik Bicara, Pustaka Media, Pesan Masuk, Newsletter.
+Modul: Ringkasan, Halaman Beranda (header sampai footer), Halaman Lain (Proyek, Tentang, Artikel, Kontak, 404), Pengaturan Website (identitas, SEO, email, sosmed), Artikel (draft, terbit, jadwal, sampul, gambar inline, tag, artikel terkait, SEO + pratinjau Google), Kategori & Tag, Proyek (logo + poster potret), E-Book (sampul potret, label, tautan), Topik Bicara, Pustaka Media, Pesan Masuk, Newsletter.
 
 **Akses admin** butuh dua hal:
 1. Akun di Supabase → Authentication → Users → *Add user* → *Create new user* (centang *Auto confirm*).

@@ -118,7 +118,7 @@ const crumbs = [{ name: 'Beranda', href: '/' }, { name: 'Proyek' }];
       <div class="container">
         <SectionHeader label="06 / Lainnya" id="h-lain"><Fragment set:html={fmtTitle(p.projects_title)} /></SectionHeader>
         <div class="proj-grid" data-stagger>
-          {projects.map((pr) => <ProjectCard name={pr.name} role={pr.role} summary={pr.summary} logo={pr.logo_url} url={pr.url} />)}
+          {projects.map((pr) => <ProjectCard name={pr.name} role={pr.role} summary={pr.summary} logo={pr.logo_url} poster={pr.poster_url} url={pr.url} />)}
         </div>
         {devPreview && <p class="dev-note">Pratinjau lokal: ini data contoh karena database belum terhubung. Di situs asli, daftar ini diambil dari CMS &gt; Proyek.</p>}
       </div>

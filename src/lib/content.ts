@@ -86,7 +86,7 @@ export const SECTIONS: Section[] = [
   },
   {
     key: 'home_work', group: 'beranda', title: 'Karya: produk, logo mitra & proyek',
-    description: 'Proyek lainnya diambil otomatis dari menu Proyek (logo, nama, peran, ringkasan, tautan).',
+    description: 'Proyek lainnya diambil otomatis dari menu Proyek (logo, poster, nama, peran, ringkasan, tautan); E-Book dari menu E-Book (sampul, judul, label, tautan).',
     manage: { label: 'Kelola Proyek Lainnya', route: '#/proyek' },
     fields: [
       { key: 'label', label: 'Label kecil', type: 'text' },
@@ -108,6 +108,7 @@ export const SECTIONS: Section[] = [
         { key: 'name', label: 'Nama modul', type: 'text' },
         { key: 'image', label: 'Gambar ikon', type: 'image' },
       ] },
+      { key: 'ebooks_title', label: 'Judul blok E-Book', type: 'text' },
       { key: 'projects_title', label: 'Judul blok Proyek Lainnya', type: 'text' },
       { key: 'trust_label', label: 'Label kecil blok logo', type: 'text' },
       { key: 'trust_title', label: 'Judul blok logo', type: 'text', help: 'Mis. "100+ sekolah & 13 partner". Perbarui angkanya bila daftar logo berubah.' },

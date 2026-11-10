@@ -1,14 +1,20 @@
 ---
 import Button from './Button.astro';
-interface Props { name: string; role?: string | null; summary?: string | null; logo?: string | null; url?: string | null }
-const { name, role, summary, logo, url } = Astro.props;
+// Kartu proyek potret: poster 3:4 di atas, isi di bawah. Tanpa poster: panel gradien dengan inisial.
+interface Props { name: string; role?: string | null; summary?: string | null; logo?: string | null; poster?: string | null; url?: string | null }
+const { name, role, summary, logo, poster, url } = Astro.props;
 ---
 <article class="proj reveal">
-  <div class="proj__top">
-    <div class="proj__logo">{logo ? <img src={logo} alt="" width="56" height="56" loading="lazy" decoding="async" /> : <span aria-hidden="true">{name.trim().charAt(0).toUpperCase()}</span>}</div>
-    {role && <span class="chip">{role}</span>}
+  <div class="proj__poster">
+    {role && <span class="chip chip--solid proj__role">{role}</span>}
+    {poster ? <img src={poster} alt="" width="600" height="800" loading="lazy" decoding="async" /> : <span class="proj__ph" aria-hidden="true">{name.trim().charAt(0).toUpperCase()}</span>}
   </div>
-  <h3 class="proj__name">{name}</h3>
-  {summary && <p class="proj__sum">{summary}</p>}
-  {url && <Button href={url} variant="ghost" icon="arrow-ur" target="_blank" rel="noopener noreferrer" aria-label={`Kunjungi ${name}`}>Kunjungi</Button>}
+  <div class="proj__body">
+    <div class="proj__head">
+      {logo && <div class="proj__logo"><img src={logo} alt="" width="44" height="44" loading="lazy" decoding="async" /></div>}
+      <h3 class="proj__name">{name}</h3>
+    </div>
+    {summary && <p class="proj__sum">{summary}</p>}
+    {url && <Button href={url} variant="ghost" icon="arrow-ur" target="_blank" rel="noopener noreferrer" aria-label={`Kunjungi ${name}`}>Kunjungi</Button>}
+  </div>
 </article>

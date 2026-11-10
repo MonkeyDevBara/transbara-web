@@ -1,0 +1,20 @@
+---
+import Icon from './Icon.astro';
+// Kartu e-book: format sama dengan WorkCard (Web Platform), tetapi potret (sampul 3:4).
+interface Props { title: string; tag?: string | null; text?: string | null; cover?: string | null; url?: string | null; index: number }
+const { title, tag, text, cover, url, index } = Astro.props;
+---
+<article class="work work--portrait reveal">
+  <div class="work__media">
+    {tag && <span class="chip chip--solid work__tag">{tag}</span>}
+    {cover ? <img src={cover} alt="" width="600" height="800" loading="lazy" decoding="async" /> : <span class="work__ph" aria-hidden="true">{title}</span>}
+  </div>
+  <div class="work__meta">
+    <span class="work__n" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+    <div>
+      <h3 class="work__title">{url ? <a href={url} class="work__link" target="_blank" rel="noopener noreferrer">{title}</a> : title}</h3>
+      {text && <p>{text}</p>}
+    </div>
+    {url && <Icon name="arrow-ur" class="work__go" />}
+  </div>
+</article>
