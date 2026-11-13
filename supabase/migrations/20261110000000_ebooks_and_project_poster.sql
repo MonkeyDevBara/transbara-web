@@ -67,4 +67,7 @@ create policy ebooks_select_public on public.ebooks
 create policy ebooks_admin_all on public.ebooks
   for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
+-- Paksa PostgREST memuat ulang schema cache supaya kolom/tabel baru langsung dikenali API.
+notify pgrst, 'reload schema';
+
 commit;

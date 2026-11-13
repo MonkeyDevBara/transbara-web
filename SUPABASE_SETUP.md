@@ -17,10 +17,15 @@ Panduan menyiapkan database, Storage, dan login admin. Semua SQL bersifat **idem
 | 2 | `supabase/migrations/20261102000100_storage.sql` | Bucket `media` + policy Storage |
 | 3 | `supabase/seed.sql` | Pengaturan situs bawaan (opsional, tidak menimpa data) |
 | 4 | `supabase/migrations/20261110000000_ebooks_and_project_poster.sql` | Tabel `ebooks` (+RLS, trigger) dan kolom `projects.poster_url` (tab E-Book & poster Proyek Lainnya) |
+| 5 | `supabase/migrations/20261113000000_page_views.sql` | Tabel `page_views` (+RLS) dan fungsi `analytics_overview()` untuk panel **Traffic kunjungan** di Ringkasan admin |
 
 Untuk tiap file: buka isinya, tempel ke SQL Editor, klik **Run**, pastikan hasilnya `Success`. Jika ada error, jangan lanjut ke file berikutnya; file dijalankan dalam satu transaksi sehingga tidak ada perubahan setengah jalan.
 
 **Bila database sudah berisi tabel/data lama** (kasus project ini): migrasi hanya menambah kolom/index/constraint yang belum ada. `CHECK` ditambahkan dengan `NOT VALID` sehingga data lama tidak ditolak. Perhatikan: **semua policy lama pada tabel aplikasi dihapus lalu dibuat ulang** sesuai desain di bawah. Foreign key tidak ditambahkan pada tabel yang sudah ada, supaya tidak muncul relasi ganda yang membingungkan PostgREST; verifikasinya ada di langkah 9.
+
+**Statistik kunjungan**: panel *Traffic kunjungan* di menu Ringkasan menampilkan "Statistik belum aktif" sampai file urutan 5 dijalankan. Data dicatat server (`POST /api/hit`, lihat `src/pages/api/hit.ts`) tanpa cookie, tanpa menyimpan IP/user-agent; pengunjung dibedakan lewat hash yang berganti tiap hari. Bot, halaman `noindex`, Do Not Track, dan admin yang sedang login tidak dihitung. Opsional: isi `ANALYTICS_SALT` (string acak panjang) di environment server (mis. blok `env` di `deploy/ecosystem.config.cjs`) agar hitungan pengunjung unik tidak terpecah saat server restart. Tabel hanya bertambah; bila perlu hapus data lama: `delete from public.page_views where created_at < now() - interval '1 year';`.
+
+**Error `Could not find the '<kolom>' column of '<tabel>' in the schema cache`** saat menyimpan di admin: migrasi yang menambah kolom itu belum dijalankan di project Supabase (mis. `poster_url` → file urutan 4). Jalankan file tersebut. Bila kolom sudah ada tetapi error tetap muncul, jalankan `notify pgrst, 'reload schema';` di SQL Editor.
 
 ## 3. Storage
 
@@ -144,5 +149,6 @@ select conrelid::regclass, conname from pg_constraint where connamespace = 'publ
 | `newsletter_subscribers` | **hanya daftar** (tidak bisa baca; email unik tanpa beda huruf) | baca, ekspor, hapus |
 | `media` + Storage `media` | file publik via URL; tidak bisa list/upload | CRUD + upload |
 | `admin_users` | tidak ada akses | baca; tulis hanya via SQL Editor |
+| `page_views` | **hanya tulis** (lewat server, tidak bisa baca) | baca; ringkasan lewat `analytics_overview()` |
 
 Pengaturan internal yang tidak boleh terbaca publik: simpan di `site_settings` dengan `is_public = false`.

@@ -127,10 +127,15 @@ export type Database = {
         { id: string; email: string; status: 'subscribed' | 'unsubscribed'; created_at: string },
         { id?: string; email: string; status?: 'subscribed' | 'unsubscribed'; created_at?: string }
       >;
+      page_views: Table<
+        { id: number; created_at: string; path: string; referrer_host: string | null; visitor_hash: string; device: 'desktop' | 'mobile' | 'tablet' },
+        { created_at?: string; path: string; referrer_host?: string | null; visitor_hash: string; device?: 'desktop' | 'mobile' | 'tablet' }
+      >;
     };
     Views: { [_ in never]: never };
     Functions: {
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      analytics_overview: { Args: { p_days?: number }; Returns: Json };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

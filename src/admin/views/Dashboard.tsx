@@ -1,5 +1,6 @@
 import { sb } from '../sb';
 import { PageHead, Panel, Loading, ErrorState, Empty, useLoad, fmtDate } from '../ui';
+import Traffic from './Traffic';
 
 async function load() {
   const count = async (table: string, f?: (b: any) => any) => {
@@ -47,6 +48,7 @@ export default function Dashboard() {
               <a class="stat" href={href as string} key={l as string} style={{ textDecoration: 'none' }}><div class="n">{n}</div><div class="l">{l}</div></a>
             ))}
           </div>
+          <Traffic />
           <div class="grid grid-2">
             <Panel title="Artikel terakhir diubah" actions={<a href="#/artikel" class="btn btn-g btn-sm">Semua</a>}>
               {data.recent.length === 0 ? <Empty title="Belum ada artikel" /> : (
