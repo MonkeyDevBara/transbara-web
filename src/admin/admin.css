@@ -125,6 +125,8 @@ textarea.inp.code { font-family: ui-monospace, 'Cascadia Code', Consolas, monosp
 .tbl .actions { text-align: right; white-space: nowrap; }
 .tbl .chk-col { width: 36px; padding-right: 0; }
 .tbl tr.sel td { background: var(--blue-soft); }
+.tbl .thumb { display: block; width: 64px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--offwhite); }
+.tbl .thumb-empty { display: flex; align-items: center; justify-content: center; color: var(--muted); }
 .bulkbar { background: var(--blue-soft); }
 .pager { border-bottom: 0; border-top: 1px solid var(--line); }
 

@@ -26,7 +26,7 @@ export function ArticleList({ query }: { query: URLSearchParams }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const { data, loading, error, reload } = useLoad(() =>
-    q(sb.from('articles').select('id, title, slug, status, published_at, updated_at, is_featured, is_sample, category:categories(name)').order('updated_at', { ascending: false })),
+    q(sb.from('articles').select('id, title, slug, cover_url, cover_alt, status, published_at, updated_at, is_featured, is_sample, category:categories(name)').order('updated_at', { ascending: false })),
   );
   const rows = useMemo(() => ((data as any[]) ?? []).filter((a) => {
     const s = statusOf(a).label.toLowerCase();
@@ -88,7 +88,7 @@ export function ArticleList({ query }: { query: URLSearchParams }) {
             <div class="tbl-wrap"><table class="tbl">
               <thead><tr>
                 <th class="chk-col"><input type="checkbox" aria-label="Pilih semua artikel di halaman ini" checked={allVisibleSelected} onChange={toggleVisible} /></th>
-                <th>Judul</th><th>Kategori</th><th>Status</th><th>Tanggal terbit</th><th>Diubah</th><th class="actions">Aksi</th>
+                <th>Judul</th><th>Sampul</th><th>Kategori</th><th>Status</th><th>Tanggal terbit</th><th>Diubah</th><th class="actions">Aksi</th>
               </tr></thead>
               <tbody>
                 {visible.map((a: any) => {
@@ -102,6 +102,7 @@ export function ArticleList({ query }: { query: URLSearchParams }) {
                         <a class="title" href={`#/artikel/${a.id}`} onClick={(e) => e.stopPropagation()}>{a.title}</a>
                         <div class="sub">/{a.slug} {a.is_featured && <span class="tag">Unggulan</span>} {a.is_sample && <span class="tag">Contoh konten</span>}</div>
                       </td>
+                      <td>{a.cover_url ? <img class="thumb" src={a.cover_url} alt={a.cover_alt || ''} loading="lazy" /> : <span class="thumb thumb-empty" aria-label="Tanpa sampul">–</span>}</td>
                       <td>{a.category?.name ?? '–'}</td>
                       <td><span class={`st ${s.cls}`}>{s.label}</span></td>
                       <td>{a.status === 'draft' ? '–' : fmtDate(a.published_at, true)}</td>
