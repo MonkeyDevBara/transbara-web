@@ -23,6 +23,16 @@ const httpUrl = (v: unknown) => {
   try { return /^https?:$/.test(new URL(s).protocol) ? s : null; } catch { return null; }
 };
 
+const MAX_IMAGE = 10 * 1024 * 1024;
+// Tipe gambar dideteksi dari isi file (magic bytes), bukan dari klaim pengirim. SVG sengaja ditolak.
+function sniffImage(b: Buffer): { type: string; ext: string } | null {
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return { type: 'image/jpeg', ext: 'jpg' };
+  if (b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return { type: 'image/png', ext: 'png' };
+  if (b.subarray(0, 4).toString('latin1') === 'GIF8') return { type: 'image/gif', ext: 'gif' };
+  if (b.subarray(0, 4).toString('latin1') === 'RIFF' && b.subarray(8, 12).toString('latin1') === 'WEBP') return { type: 'image/webp', ext: 'webp' };
+  return null;
+}
+
 // Batas laju kasar per proses (anti brute-force key / banjir).
 const hits: number[] = [];
 const limited = () => {
@@ -45,7 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
   let body: Record<string, unknown>;
   try {
     const raw = await request.text();
-    if (raw.length > 500_000) return json({ error: 'Body terlalu besar (maks 500 KB).' }, 413);
+    if (raw.length > 14_500_000) return json({ error: 'Body terlalu besar (maks ~14 MB).' }, 413);
     body = JSON.parse(raw);
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error();
   } catch { return json({ error: 'Body harus JSON object.' }, 400); }
@@ -72,6 +82,31 @@ export const POST: APIRoute = async ({ request }) => {
     slug = `${baseSlug}-${i}`;
   }
 
+  // Sampul: unggah ke Storage bucket "media" dari base64 atau dari URL https; hasilnya jadi cover_url.
+  let cover_url = httpUrl(body.cover_url);
+  let uploadedPath: string | null = null;
+  const b64 = typeof body.cover_image_base64 === 'string' ? body.cover_image_base64.replace(/^data:[^,]*,/, '').replace(/\s/g, '') : '';
+  const srcUrl = httpUrl(body.cover_image_url);
+  if (b64 || srcUrl) {
+    let buf: Buffer | null = null;
+    if (b64) buf = Buffer.from(b64, 'base64');
+    else if (srcUrl!.startsWith('https://')) {
+      try {
+        const r = await fetch(srcUrl!, { redirect: 'error', signal: AbortSignal.timeout(15_000) });
+        const len = Number(r.headers.get('content-length') ?? 0);
+        if (r.ok && len <= MAX_IMAGE) buf = Buffer.from(await r.arrayBuffer());
+      } catch { /* ditangani di bawah */ }
+    }
+    const kind = buf && buf.length <= MAX_IMAGE ? sniffImage(buf) : null;
+    if (!buf || !kind) return json({ error: 'Gambar sampul tidak valid: harus JPG/PNG/WebP/GIF, maks 10 MB (URL harus https).' }, 400);
+    uploadedPath = `${new Date().toISOString().slice(0, 7)}/${slug}-${Date.now().toString(36)}.${kind.ext}`;
+    const { error: upErr } = await db.storage.from('media').upload(uploadedPath, buf, { contentType: kind.type, upsert: false });
+    if (upErr) return json({ error: 'Gagal mengunggah sampul: ' + upErr.message }, 502);
+    cover_url = db.storage.from('media').getPublicUrl(uploadedPath).data.publicUrl;
+    const { error: mErr } = await db.from('media').insert({ url: cover_url, alt: str(body.cover_alt, 300) });
+    if (mErr) warnings.push('Sampul terunggah tapi tidak tercatat di Pustaka Media: ' + mErr.message);
+  }
+
   // Kategori: cocokkan slug/nama yang sudah ada; bila tak ketemu, artikel tanpa kategori.
   let category_id: string | null = null;
   const cat = str(body.category, 100);
@@ -88,7 +123,7 @@ export const POST: APIRoute = async ({ request }) => {
       subtitle: str(body.subtitle, 300),
       excerpt: str(body.excerpt, 500),
       content,
-      cover_url: httpUrl(body.cover_url),
+      cover_url,
       cover_alt: str(body.cover_alt, 300),
       cover_credit: str(body.cover_credit, 300),
       category_id,
@@ -101,7 +136,10 @@ export const POST: APIRoute = async ({ request }) => {
     })
     .select('id, slug, status')
     .single();
-  if (error || !art) return json({ error: 'Gagal menyimpan artikel: ' + (error?.message ?? 'unknown') }, 502);
+  if (error || !art) {
+    if (uploadedPath) await db.storage.from('media').remove([uploadedPath]);
+    return json({ error: 'Gagal menyimpan artikel: ' + (error?.message ?? 'unknown') }, 502);
+  }
 
   // Tag: dibuat bila belum ada.
   const tagNames = Array.isArray(body.tags) ? [...new Set(body.tags.map((t) => str(t, 60)).filter((t): t is string => !!t))].slice(0, 10) : [];
