@@ -15,9 +15,16 @@ const TABS = [
   { key: 'terjadwal', label: 'Terjadwal' },
 ];
 
+const PAGE_SIZES = [10, 25, 50];
+
 export function ArticleList({ query }: { query: URLSearchParams }) {
+  const toast = useToast();
   const [tab, setTab] = useState(query.get('status') ?? '');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
   const { data, loading, error, reload } = useLoad(() =>
     q(sb.from('articles').select('id, title, slug, status, published_at, updated_at, is_featured, is_sample, category:categories(name)').order('updated_at', { ascending: false })),
   );
@@ -27,41 +34,98 @@ export function ArticleList({ query }: { query: URLSearchParams }) {
     return !search || a.title.toLowerCase().includes(search.toLowerCase());
   }), [data, tab, search]);
 
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  const current = Math.min(page, pageCount);
+  const visible = rows.slice((current - 1) * pageSize, current * pageSize);
+  const allVisibleSelected = visible.length > 0 && visible.every((a) => selected.has(a.id));
+
+  const resetView = () => { setPage(1); setSelected(new Set()); };
+  const toggle = (id: string) => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleVisible = () => setSelected((prev) => {
+    const n = new Set(prev);
+    for (const a of visible) allVisibleSelected ? n.delete(a.id) : n.add(a.id);
+    return n;
+  });
+
+  const deleteIds = async (ids: string[], label: string) => {
+    if (!confirm(`Hapus ${label}? Tindakan ini tidak bisa dibatalkan.`)) return;
+    setDeleting(true);
+    try {
+      for (let i = 0; i < ids.length; i += 100) await q(sb.from('articles').delete().in('id', ids.slice(i, i + 100)).select('id'));
+      toast(ids.length === 1 ? 'Artikel dihapus.' : `${ids.length} artikel dihapus.`);
+      setSelected((prev) => { const n = new Set(prev); ids.forEach((id) => n.delete(id)); return n; });
+      await reload();
+    } catch (e) {
+      toast(errMsg(e), true);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <>
       <PageHead title="Artikel" desc="Tulis, jadwalkan, dan kelola tulisan." actions={<a class="btn btn-p" href="#/artikel/baru">+ Artikel baru</a>} />
       <Panel>
         <div class="toolbar">
           <div class="tabs" role="tablist">
-            {TABS.map((t) => <button key={t.key} role="tab" aria-selected={tab === t.key} class={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>{t.label}</button>)}
+            {TABS.map((t) => <button key={t.key} role="tab" aria-selected={tab === t.key} class={tab === t.key ? 'on' : ''} onClick={() => { setTab(t.key); resetView(); }}>{t.label}</button>)}
           </div>
-          <input class="inp" type="search" placeholder="Cari judul…" aria-label="Cari judul artikel" value={search} onInput={(e) => setSearch(e.currentTarget.value)} style={{ marginLeft: 'auto' }} />
+          <input class="inp" type="search" placeholder="Cari judul…" aria-label="Cari judul artikel" value={search} onInput={(e) => { setSearch(e.currentTarget.value); resetView(); }} style={{ marginLeft: 'auto' }} />
         </div>
+        {selected.size > 0 && (
+          <div class="toolbar bulkbar" role="status">
+            <strong>{selected.size} artikel dipilih</strong>
+            <button type="button" class="btn btn-d btn-sm" disabled={deleting} onClick={() => deleteIds([...selected], `${selected.size} artikel terpilih`)}>{deleting ? 'Menghapus…' : 'Hapus terpilih'}</button>
+            <button type="button" class="btn btn-g btn-sm" disabled={deleting} onClick={() => setSelected(new Set())}>Batal pilih</button>
+          </div>
+        )}
         {loading ? <Loading /> : error ? <ErrorState text={error} retry={reload} /> : rows.length === 0 ? (
           <Empty title={data && (data as any[]).length ? 'Tidak ada yang cocok' : 'Belum ada artikel'} text={data && (data as any[]).length ? 'Ubah filter atau kata kunci.' : 'Mulai dengan menulis artikel pertama.'}>
             {!(data as any[])?.length && <a class="btn btn-p" href="#/artikel/baru">Tulis artikel</a>}
           </Empty>
         ) : (
-          <div class="tbl-wrap"><table class="tbl">
-            <thead><tr><th>Judul</th><th>Kategori</th><th>Status</th><th>Tanggal terbit</th><th>Diubah</th></tr></thead>
-            <tbody>
-              {rows.map((a: any) => {
-                const s = statusOf(a);
-                return (
-                  <tr key={a.id} class="clickable" onClick={() => (location.hash = `#/artikel/${a.id}`)}>
-                    <td>
-                      <a class="title" href={`#/artikel/${a.id}`} onClick={(e) => e.stopPropagation()}>{a.title}</a>
-                      <div class="sub">/{a.slug} {a.is_featured && <span class="tag">Unggulan</span>} {a.is_sample && <span class="tag">Contoh konten</span>}</div>
-                    </td>
-                    <td>{a.category?.name ?? '–'}</td>
-                    <td><span class={`st ${s.cls}`}>{s.label}</span></td>
-                    <td>{a.status === 'draft' ? '–' : fmtDate(a.published_at, true)}</td>
-                    <td class="sub">{fmtDate(a.updated_at)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table></div>
+          <>
+            <div class="tbl-wrap"><table class="tbl">
+              <thead><tr>
+                <th class="chk-col"><input type="checkbox" aria-label="Pilih semua artikel di halaman ini" checked={allVisibleSelected} onChange={toggleVisible} /></th>
+                <th>Judul</th><th>Kategori</th><th>Status</th><th>Tanggal terbit</th><th>Diubah</th><th class="actions">Aksi</th>
+              </tr></thead>
+              <tbody>
+                {visible.map((a: any) => {
+                  const s = statusOf(a);
+                  return (
+                    <tr key={a.id} class={`clickable${selected.has(a.id) ? ' sel' : ''}`} onClick={() => (location.hash = `#/artikel/${a.id}`)}>
+                      <td class="chk-col" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" aria-label={`Pilih ${a.title}`} checked={selected.has(a.id)} onChange={() => toggle(a.id)} />
+                      </td>
+                      <td>
+                        <a class="title" href={`#/artikel/${a.id}`} onClick={(e) => e.stopPropagation()}>{a.title}</a>
+                        <div class="sub">/{a.slug} {a.is_featured && <span class="tag">Unggulan</span>} {a.is_sample && <span class="tag">Contoh konten</span>}</div>
+                      </td>
+                      <td>{a.category?.name ?? '–'}</td>
+                      <td><span class={`st ${s.cls}`}>{s.label}</span></td>
+                      <td>{a.status === 'draft' ? '–' : fmtDate(a.published_at, true)}</td>
+                      <td class="sub">{fmtDate(a.updated_at)}</td>
+                      <td class="actions" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" class="btn btn-d btn-sm" disabled={deleting} onClick={() => deleteIds([a.id], `artikel "${a.title}"`)}>Hapus</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table></div>
+            <div class="toolbar pager">
+              <span class="sub">{(current - 1) * pageSize + 1}–{Math.min(current * pageSize, rows.length)} dari {rows.length} artikel</span>
+              <label class="sub" style={{ marginLeft: 'auto' }}>Per halaman{' '}
+                <select class="inp" value={pageSize} onChange={(e) => { setPageSize(Number(e.currentTarget.value)); setPage(1); }} style={{ width: 'auto', minHeight: 30 }}>
+                  {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+              <button type="button" class="btn btn-s btn-sm" disabled={current <= 1} onClick={() => setPage(current - 1)}>‹ Sebelumnya</button>
+              <span class="sub">Halaman {current} / {pageCount}</span>
+              <button type="button" class="btn btn-s btn-sm" disabled={current >= pageCount} onClick={() => setPage(current + 1)}>Berikutnya ›</button>
+            </div>
+          </>
         )}
       </Panel>
     </>
